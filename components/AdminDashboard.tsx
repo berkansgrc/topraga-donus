@@ -3,7 +3,7 @@ import { supabase } from '../services/supabaseClient';
 import { ViewState } from '../types';
 import {
   LogOut, Plus, Trash2, LayoutDashboard, MapPin,
-  Recycle, Loader2, Image as ImageIcon, X, Palette, Database, Copy, Inbox, FlaskConical, Sprout, Ruler, Leaf, Lightbulb, Map
+  Recycle, Loader2, Image as ImageIcon, X, Palette, Database, Copy, Inbox, FlaskConical, Sprout, Ruler, Leaf, Lightbulb, Map, School, CheckCircle, XCircle, Newspaper, Clock, User, Star, Eye
 } from 'lucide-react';
 import LocationPicker from './LocationPicker';
 
@@ -12,7 +12,7 @@ interface AdminDashboardProps {
 }
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
-  const [activeTab, setActiveTab] = useState<'waste' | 'stations' | 'gallery' | 'suggestions' | 'lab'>('waste');
+  const [activeTab, setActiveTab] = useState<'waste' | 'stations' | 'gallery' | 'suggestions' | 'lab' | 'schools' | 'blog'>('waste');
   const [loading, setLoading] = useState(false);
   const [listData, setListData] = useState<any[]>([]);
   const [tableError, setTableError] = useState<string | null>(null);
@@ -47,6 +47,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
       case 'gallery': return 'project_images';
       case 'suggestions': return 'suggestions';
       case 'lab': return 'compost_logs';
+      case 'schools': return 'school_registrations';
+      case 'blog': return 'blog_posts';
       default: return 'waste_items';
     }
   };
@@ -141,8 +143,17 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
         if (!finalData.experiment_type) finalData.experiment_type = 'normal';
         if (!finalData.date) finalData.date = new Date().toISOString().split('T')[0];
       }
+      if (activeTab === 'blog') {
+        if (!finalData.category) finalData.category = 'haberler';
+        if (!finalData.author) finalData.author = 'Harezmi Ekibi';
+        if (!finalData.read_time) finalData.read_time = '5 dk';
+        if (finalData.is_published === undefined) finalData.is_published = true;
+      }
 
-      const payload = { ...finalData, ...(imageUrl && { imageUrl }) };
+      // Blog için image_url, diğerleri için imageUrl kullan
+      const payload = activeTab === 'blog'
+        ? { ...finalData, ...(imageUrl && { image_url: imageUrl }) }
+        : { ...finalData, ...(imageUrl && { imageUrl }) };
 
       if (!payload.id) delete payload.id;
 
@@ -218,6 +229,25 @@ create policy "Admin Manage Suggestions" on suggestions for all to authenticated
 
 create policy "Public Read Logs" on compost_logs for select using (true);
 create policy "Admin Manage Logs" on compost_logs for all to authenticated using (true);
+
+-- Okul Başvuruları Tablosu
+create table if not exists school_registrations (
+  id uuid default gen_random_uuid() primary key,
+  school_name text not null,
+  city text not null,
+  district text,
+  teacher_name text not null,
+  email text not null,
+  phone text,
+  student_count integer,
+  activities text[],
+  status text default 'pending' check (status in ('pending', 'approved', 'rejected')),
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table school_registrations enable row level security;
+create policy "Public Insert Schools" on school_registrations for insert with check (true);
+create policy "Admin Manage Schools" on school_registrations for all to authenticated using (true);
     `;
     navigator.clipboard.writeText(sql);
     alert('SQL kodları kopyalandı! Supabase SQL Editor\'e yapıştırıp çalıştırın. Eğer eski "compost_logs" tablosu varsa önce onu silin.');
@@ -418,6 +448,97 @@ create policy "Admin Manage Logs" on compost_logs for all to authenticated using
     </>
   );
 
+  const renderBlogForm = () => (
+    <>
+      <div>
+        <label className="block text-sm font-semibold mb-1">Yazı Başlığı</label>
+        <input
+          className="w-full p-2 border rounded-lg"
+          value={formData.title || ''}
+          onChange={e => setFormData({ ...formData, title: e.target.value })}
+          placeholder="Başlık girin..."
+          required
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-semibold mb-1">Kısa Özet</label>
+        <textarea
+          className="w-full p-2 border rounded-lg"
+          value={formData.excerpt || ''}
+          onChange={e => setFormData({ ...formData, excerpt: e.target.value })}
+          placeholder="Yazının kısa açıklaması (liste görünümünde gösterilir)..."
+          rows={2}
+          required
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-semibold mb-1">İçerik</label>
+        <textarea
+          className="w-full p-2 border rounded-lg"
+          value={formData.content || ''}
+          onChange={e => setFormData({ ...formData, content: e.target.value })}
+          placeholder="Yazının tam içeriği..."
+          rows={6}
+          required
+        />
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-semibold mb-1">Kategori</label>
+          <select
+            className="w-full p-2 border rounded-lg"
+            value={formData.category || 'haberler'}
+            onChange={e => setFormData({ ...formData, category: e.target.value })}
+          >
+            <option value="kompost">🌱 Kompost</option>
+            <option value="geridonusum">♻️ Geri Dönüşüm</option>
+            <option value="haberler">📰 Haberler</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-semibold mb-1">Yazar</label>
+          <input
+            className="w-full p-2 border rounded-lg"
+            value={formData.author || 'Harezmi Ekibi'}
+            onChange={e => setFormData({ ...formData, author: e.target.value })}
+            placeholder="Yazar adı"
+          />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-semibold mb-1">Okuma Süresi</label>
+          <input
+            className="w-full p-2 border rounded-lg"
+            value={formData.read_time || '5 dk'}
+            onChange={e => setFormData({ ...formData, read_time: e.target.value })}
+            placeholder="Örn: 5 dk"
+          />
+        </div>
+        <div className="flex flex-col justify-end">
+          <label className="flex items-center space-x-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={formData.is_featured || false}
+              onChange={e => setFormData({ ...formData, is_featured: e.target.checked })}
+              className="w-4 h-4 text-primary rounded"
+            />
+            <span className="text-sm font-medium">⭐ Öne Çıkan Yazı</span>
+          </label>
+          <label className="flex items-center space-x-2 cursor-pointer mt-2">
+            <input
+              type="checkbox"
+              checked={formData.is_published !== false}
+              onChange={e => setFormData({ ...formData, is_published: e.target.checked })}
+              className="w-4 h-4 text-primary rounded"
+            />
+            <span className="text-sm font-medium">👁️ Yayında</span>
+          </label>
+        </div>
+      </div>
+    </>
+  );
+
   return (
     <div className="min-h-screen bg-background-base">
       <header className="bg-white border-b border-border sticky top-0 z-30">
@@ -471,6 +592,18 @@ create policy "Admin Manage Logs" on compost_logs for all to authenticated using
           >
             <Inbox className="mr-2" size={20} /> Gelen Kutusu
           </button>
+          <button
+            onClick={() => setActiveTab('schools')}
+            className={`px-6 py-3 rounded-card font-bold flex items-center transition-all ${activeTab === 'schools' ? 'bg-pink-600 text-white shadow-card' : 'bg-white text-text-secondary hover:bg-background-subtle'}`}
+          >
+            <School className="mr-2" size={20} /> Okul Başvuruları
+          </button>
+          <button
+            onClick={() => setActiveTab('blog')}
+            className={`px-6 py-3 rounded-card font-bold flex items-center transition-all ${activeTab === 'blog' ? 'bg-rose-600 text-white shadow-card' : 'bg-white text-text-secondary hover:bg-background-subtle'}`}
+          >
+            <Newspaper className="mr-2" size={20} /> Blog / Haberler
+          </button>
         </div>
 
         <div className="flex justify-between items-center mb-6">
@@ -479,11 +612,13 @@ create policy "Admin Manage Logs" on compost_logs for all to authenticated using
               activeTab === 'stations' ? 'İstasyon Listesi' :
                 activeTab === 'lab' ? 'Bitki Deney Verileri' :
                   activeTab === 'suggestions' ? 'Kullanıcı Katkıları' :
-                    'Görsel Galerisi'}
+                    activeTab === 'schools' ? 'Okul Başvuruları' :
+                      activeTab === 'blog' ? 'Blog Yazıları' :
+                        'Görsel Galerisi'}
           </h2>
-          {activeTab !== 'suggestions' && (
+          {activeTab !== 'suggestions' && activeTab !== 'schools' && (
             <button
-              onClick={() => { setFormData({}); setShowModal(true); }}
+              onClick={() => { setFormData(activeTab === 'blog' ? { is_published: true, author: 'Harezmi Ekibi', read_time: '5 dk' } : {}); setShowModal(true); }}
               className="bg-primary hover:bg-primary-600 text-white px-4 py-2 rounded-button font-bold flex items-center shadow-soft"
             >
               <Plus size={20} className="mr-2" /> Yeni Ekle
@@ -545,6 +680,23 @@ create policy "Admin Manage Logs" on compost_logs for all to authenticated using
                       <th className="p-4 font-bold w-24">Tür</th>
                       <th className="p-4 font-bold w-48">Tarih / Gönderen</th>
                       <th className="p-4 font-bold">Detaylar</th>
+                      <th className="p-4 font-bold text-right">İşlemler</th>
+                    </tr>
+                  ) : activeTab === 'schools' ? (
+                    <tr>
+                      <th className="p-4 font-bold">Okul Bilgileri</th>
+                      <th className="p-4 font-bold">İletişim</th>
+                      <th className="p-4 font-bold">Aktiviteler</th>
+                      <th className="p-4 font-bold w-32">Durum</th>
+                      <th className="p-4 font-bold text-right">İşlemler</th>
+                    </tr>
+                  ) : activeTab === 'blog' ? (
+                    <tr>
+                      <th className="p-4 font-bold w-20">Görsel</th>
+                      <th className="p-4 font-bold">Başlık / Özet</th>
+                      <th className="p-4 font-bold w-28">Kategori</th>
+                      <th className="p-4 font-bold w-32">Yazar</th>
+                      <th className="p-4 font-bold w-24">Durum</th>
                       <th className="p-4 font-bold text-right">İşlemler</th>
                     </tr>
                   ) : (
@@ -648,6 +800,132 @@ create policy "Admin Manage Logs" on compost_logs for all to authenticated using
                               </div>
                             </td>
                           </>
+                        ) : activeTab === 'schools' ? (
+                          <>
+                            {/* 1. SÜTUN: OKUL BİLGİLERİ */}
+                            <td className="p-4 align-top">
+                              <div className="flex items-start space-x-3">
+                                <div className="w-12 h-12 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center border border-pink-200 shadow-sm shrink-0">
+                                  <School size={20} />
+                                </div>
+                                <div>
+                                  <div className="font-bold text-text-primary">{item.school_name}</div>
+                                  <div className="text-sm text-text-muted flex items-center mt-1">
+                                    <MapPin size={14} className="mr-1" />
+                                    {item.city}{item.district ? `, ${item.district}` : ''}
+                                  </div>
+                                  <div className="text-xs text-text-muted mt-1">
+                                    👤 {item.teacher_name}
+                                  </div>
+                                  <div className="text-xs text-text-muted mt-1">
+                                    🎓 ~{item.student_count || 0} öğrenci
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+
+                            {/* 2. SÜTUN: İLETİŞİM */}
+                            <td className="p-4 align-top">
+                              <div className="space-y-1 text-sm">
+                                <a href={`mailto:${item.email}`} className="text-primary hover:underline flex items-center">
+                                  📧 {item.email}
+                                </a>
+                                {item.phone && (
+                                  <div className="text-text-muted flex items-center">
+                                    📱 {item.phone}
+                                  </div>
+                                )}
+                                <div className="text-xs text-text-muted mt-2">
+                                  📅 {new Date(item.created_at).toLocaleDateString('tr-TR')}
+                                </div>
+                              </div>
+                            </td>
+
+                            {/* 3. SÜTUN: AKTİVİTELER */}
+                            <td className="p-4 align-top">
+                              <div className="flex flex-wrap gap-1">
+                                {(item.activities || []).map((act: string, idx: number) => (
+                                  <span key={idx} className="px-2 py-0.5 bg-primary-soft text-primary-700 text-xs rounded-pill font-medium">
+                                    {act === 'kompost' ? '🌱 Kompost' :
+                                      act === 'atik' ? '♻️ Atık' :
+                                        act === 'bitki' ? '🌿 Bitki' :
+                                          act === 'kampanya' ? '📢 Kampanya' :
+                                            act === 'harita' ? '📍 Harita' : act}
+                                  </span>
+                                ))}
+                                {(!item.activities || item.activities.length === 0) && (
+                                  <span className="text-text-muted text-sm italic">Belirtilmemiş</span>
+                                )}
+                              </div>
+                            </td>
+
+                            {/* 4. SÜTUN: DURUM */}
+                            <td className="p-4 align-middle">
+                              <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold
+                                ${item.status === 'approved' ? 'bg-green-100 text-green-700 border border-green-200' :
+                                  item.status === 'rejected' ? 'bg-red-100 text-red-700 border border-red-200' :
+                                    'bg-amber-100 text-amber-700 border border-amber-200'}`}
+                              >
+                                {item.status === 'approved' ? (
+                                  <><CheckCircle size={12} className="mr-1" /> Onaylandı</>
+                                ) : item.status === 'rejected' ? (
+                                  <><XCircle size={12} className="mr-1" /> Reddedildi</>
+                                ) : (
+                                  <>⏳ Beklemede</>
+                                )}
+                              </span>
+                            </td>
+                          </>
+                        ) : activeTab === 'blog' ? (
+                          <>
+                            {/* BLOG GÖRÜNÜMÜ */}
+                            <td className="p-4 align-top">
+                              {item.image_url ? (
+                                <img
+                                  src={item.image_url}
+                                  alt={item.title}
+                                  className="w-16 h-16 rounded-lg object-cover shadow-sm border border-border"
+                                />
+                              ) : (
+                                <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-rose-100 to-rose-200 flex items-center justify-center text-rose-500">
+                                  <Newspaper size={24} />
+                                </div>
+                              )}
+                            </td>
+                            <td className="p-4 align-top">
+                              <div className="font-bold text-text-primary mb-1">{item.title}</div>
+                              <p className="text-sm text-text-muted line-clamp-2">{item.excerpt}</p>
+                              <div className="flex items-center gap-3 mt-2 text-xs text-text-muted">
+                                <span className="flex items-center"><Clock size={12} className="mr-1" />{item.read_time || '5 dk'}</span>
+                                <span>{new Date(item.created_at).toLocaleDateString('tr-TR')}</span>
+                              </div>
+                            </td>
+                            <td className="p-4 align-middle">
+                              <span className={`px-2 py-1 rounded-md text-xs font-bold
+                                ${item.category === 'kompost' ? 'bg-green-100 text-green-700' :
+                                  item.category === 'geridonusum' ? 'bg-blue-100 text-blue-700' :
+                                    'bg-purple-100 text-purple-700'}`}
+                              >
+                                {item.category === 'kompost' ? '🌱 Kompost' :
+                                  item.category === 'geridonusum' ? '♻️ Geri Dönüşüm' : '📰 Haberler'}
+                              </span>
+                            </td>
+                            <td className="p-4 align-middle text-sm text-text-secondary">
+                              <div className="flex items-center"><User size={14} className="mr-1" />{item.author}</div>
+                            </td>
+                            <td className="p-4 align-middle">
+                              <div className="flex flex-col gap-1">
+                                {item.is_featured && (
+                                  <span className="inline-flex items-center text-xs text-amber-600 font-medium">
+                                    <Star size={12} className="mr-1 fill-amber-400" /> Öne Çıkan
+                                  </span>
+                                )}
+                                <span className={`inline-flex items-center text-xs font-medium ${item.is_published ? 'text-green-600' : 'text-gray-400'}`}>
+                                  <Eye size={12} className="mr-1" /> {item.is_published ? 'Yayında' : 'Taslak'}
+                                </span>
+                              </div>
+                            </td>
+                          </>
                         ) : (
                           <>
                             {/* DİĞER SEKMELER İÇİN STANDART GÖRÜNÜM */}
@@ -709,7 +987,8 @@ create policy "Admin Manage Logs" on compost_logs for all to authenticated using
               <h3 className="font-bold text-lg text-text-primary">
                 {activeTab === 'gallery' ? 'Yeni Görsel Ekle' :
                   activeTab === 'lab' ? 'Yeni Deney Verisi Ekle' :
-                    'Yeni Kayıt Ekle'}
+                    activeTab === 'blog' ? 'Yeni Blog Yazısı' :
+                      'Yeni Kayıt Ekle'}
               </h3>
               <button onClick={() => setShowModal(false)} className="text-text-muted hover:text-text-primary">
                 <X size={20} />
@@ -720,7 +999,8 @@ create policy "Admin Manage Logs" on compost_logs for all to authenticated using
               {activeTab === 'waste' ? renderWasteForm() :
                 activeTab === 'stations' ? renderStationForm() :
                   activeTab === 'lab' ? renderLabForm() :
-                    renderGalleryForm()}
+                    activeTab === 'blog' ? renderBlogForm() :
+                      renderGalleryForm()}
 
               {activeTab !== 'lab' && (
                 <div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sprout, Map, BookOpen, FlaskConical, Menu, X, ShieldCheck, Image as ImageIcon } from 'lucide-react';
+import { Sprout, Map, BookOpen, FlaskConical, Menu, X, ShieldCheck, Image as ImageIcon, Newspaper, HelpCircle, School } from 'lucide-react';
 import { ViewState } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
 import MobileNav from './MobileNav';
@@ -20,6 +20,7 @@ const Layout: React.FC<LayoutProps> = ({ currentView, setView, children }) => {
     { id: ViewState.LAB, label: 'Kompost Lab', icon: FlaskConical },
     { id: ViewState.MAP, label: 'İstasyon Haritası', icon: Map },
     { id: ViewState.GALLERY, label: 'Galeri', icon: ImageIcon },
+    { id: ViewState.BLOG, label: 'Haberler', icon: Newspaper },
   ];
 
   return (
@@ -148,23 +149,105 @@ const Layout: React.FC<LayoutProps> = ({ currentView, setView, children }) => {
 
       {/* Footer */}
       <footer className="bg-background-surface border-t border-border py-12 px-4 mt-auto pb-24 md:pb-12">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="text-center md:text-left">
-            <h4 className="font-bold text-text-primary mb-2">Toprağa Dönüş</h4>
-            <p className="text-sm text-text-muted max-w-xs">
-              Ev atıklarını doğru yönetmeyi öğreten, kompost takibi ve geri dönüşüm rehberi.
-            </p>
+        <div className="max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
+
+            {/* Brand */}
+            <div className="md:col-span-1">
+              <div className="flex items-center space-x-2 mb-3">
+                <div className="bg-primary text-white p-1.5 rounded-lg">
+                  <Sprout size={18} />
+                </div>
+                <h4 className="font-bold text-text-primary">Toprağa Dönüş</h4>
+              </div>
+              <p className="text-sm text-text-muted">
+                Ev atıklarını doğru yönetmeyi öğreten, kompost takibi ve geri dönüşüm rehberi.
+              </p>
+            </div>
+
+            {/* Quick Links */}
+            <div>
+              <h5 className="font-semibold text-text-primary mb-3 text-sm">Hızlı Erişim</h5>
+              <ul className="space-y-2">
+                <li>
+                  <button onClick={() => setView(ViewState.GUIDE)} className="text-sm text-text-muted hover:text-primary transition-colors">
+                    Atık Rehberi
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => setView(ViewState.LAB)} className="text-sm text-text-muted hover:text-primary transition-colors">
+                    Kompost Lab
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => setView(ViewState.MAP)} className="text-sm text-text-muted hover:text-primary transition-colors">
+                    İstasyon Haritası
+                  </button>
+                </li>
+              </ul>
+            </div>
+
+            {/* New Pages */}
+            <div>
+              <h5 className="font-semibold text-text-primary mb-3 text-sm">Keşfet</h5>
+              <ul className="space-y-2">
+                <li>
+                  <button onClick={() => setView(ViewState.BLOG)} className="text-sm text-text-muted hover:text-primary transition-colors flex items-center">
+                    <Newspaper size={14} className="mr-2" /> Blog & Haberler
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => setView(ViewState.FAQ)} className="text-sm text-text-muted hover:text-primary transition-colors flex items-center">
+                    <HelpCircle size={14} className="mr-2" /> Sık Sorulan Sorular
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => setView(ViewState.SCHOOL_REGISTER)} className="text-sm text-text-muted hover:text-primary transition-colors flex items-center">
+                    <School size={14} className="mr-2" /> Okul Kaydı
+                  </button>
+                </li>
+              </ul>
+            </div>
+
+            {/* Contribute */}
+            <div>
+              <h5 className="font-semibold text-text-primary mb-3 text-sm">Katkıda Bulun</h5>
+              <ul className="space-y-2">
+                <li>
+                  <button onClick={() => setView(ViewState.CONTRIBUTE)} className="text-sm text-text-muted hover:text-primary transition-colors">
+                    Katkı Yap
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => setView(ViewState.GALLERY)} className="text-sm text-text-muted hover:text-primary transition-colors">
+                    Proje Galerisi
+                  </button>
+                </li>
+              </ul>
+            </div>
           </div>
 
-          <div className="text-xs text-text-muted/60 flex items-center space-x-2 select-none">
-            {/* GİZLİ TETİKLEYİCİ: Telif hakkı metnine ÇİFT TIKLANIRSA admin girişi açılır */}
-            <span
-              onDoubleClick={() => setView(ViewState.ADMIN_LOGIN)}
-              className="cursor-default hover:text-text-secondary transition-colors"
-              title=""
-            >
-              © 2026 Harezmi Eğitim Modeli
-            </span>
+          {/* Bottom Bar */}
+          <div className="pt-6 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="text-xs text-text-muted/60 select-none">
+              <span
+                onDoubleClick={() => setView(ViewState.ADMIN_LOGIN)}
+                className="cursor-default hover:text-text-secondary transition-colors"
+                title=""
+              >
+                © 2026 Harezmi Eğitim Modeli
+              </span>
+            </div>
+            <div className="flex items-center gap-4 text-xs text-text-muted">
+              <button
+                onClick={() => setView(ViewState.PRIVACY_POLICY)}
+                className="hover:text-primary transition-colors"
+              >
+                Gizlilik Politikası
+              </button>
+              <span className="text-border">|</span>
+              <span>Türkiye genelinde sürdürülebilir eğitim</span>
+            </div>
           </div>
         </div>
       </footer>

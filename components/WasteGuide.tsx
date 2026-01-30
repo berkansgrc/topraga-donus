@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { useWasteItems } from '../hooks/useData';
-import { 
-  Search, AlertTriangle, CheckCircle, Ban, Leaf, Battery, Box, Archive, 
+import {
+  Search, AlertTriangle, CheckCircle, Ban, Leaf, Battery, Box, Archive,
   Coffee, Sprout, FileText, Bone, Droplets, Wind, Scissors, Layers, Info, Filter,
-  Loader2
+  Loader2, X
 } from 'lucide-react';
 import { WasteItem } from '../types';
+import CompostAnimation from './CompostAnimation';
+import CarbonCalculator from './CarbonCalculator';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const getIcon = (iconName: string) => {
   switch (iconName) {
@@ -15,7 +18,7 @@ const getIcon = (iconName: string) => {
     case 'coffee': return <Coffee size={24} className="text-secondary-600" />;
     case 'grass': return <Sprout size={24} className="text-primary-600" />;
     case 'flower': return <div className="text-2xl">🥀</div>;
-    case 'egg': return <div className="w-6 h-7 rounded-full border-2 border-stone-300 bg-white" />; 
+    case 'egg': return <div className="w-6 h-7 rounded-full border-2 border-stone-300 bg-white" />;
     case 'box': return <Box size={24} className="text-secondary" />;
     case 'wood': return <div className="text-2xl">🪵</div>;
     case 'nut': return <div className="text-2xl">🌰</div>;
@@ -33,9 +36,41 @@ const getIcon = (iconName: string) => {
   }
 };
 
-const WasteCard: React.FC<{ item: WasteItem }> = ({ item }) => {
+// Detaylı açıklamalar
+const DETAIL_DESCRIPTIONS: Record<string, string> = {
+  // YEŞİLLER (Azot)
+  "Sebze ve Meyve Kabukları": "Ayrışmayı hızlandırmak için mutlaka küçük parçalara bölerek eklemelisin. Üzerlerinde pestisit (tarım ilacı) kalıntısı olma riskine karşı yıkanmış olmaları toprağın sağlığı için kritiktir.",
+  "Çay Posası": "Doğrudan dökebilirsin ancak poşet çay kullanıyorsan poşetin plastik içermediğinden emin olmalısın. Sentetik poşetler toprakta çözünmez.",
+  "Kahve Telvesi": "Azot açısından çok zengindir. Toprağa eklemeden önce soğumasını beklemeli ve toprağın üzerine topaklanmayacak şekilde serpiştirmelisin.",
+  "Taze Çim Kırpıntıları": "Kurumasını beklemeden eklenebilir ancak dikkat etmen gereken nokta ince tabakalar halinde eklemektir; kalın tabakalar hava akışını kesip kötü koku yapabilir.",
+  "Solmuş Çiçekler": "Bahçendeki renkli atıkları eklerken bu çiçeklerin hastalıklı veya mantarlı olmadığından emin olmalısın, aksi halde hastalığı tüm toprağa yayabilirsin.",
+
+  // KAHVERENGİLER (Karbon)
+  "Yumurta Kabuğu": "Tam bir kalsiyum deposudur. Ancak etkili olması için mutlaka yıkanmalı, kurutulmalı ve un ufak edilene kadar ezilmelidir. Bütün haldeki kabuklar çok geç ayrışır.",
+  "Kuru Yapraklar": "Nem dengesini korur. Daha hızlı toprak olması için ufalayarak eklemek en iyisidir.",
+  "Karton ve Kağıt": "Geri dönüşümün kahramanıdır ama üzerinde boya, kaplama veya bant olmamalıdır. Parça parça yırtarak karbon dengesini sağlayabilirsin.",
+  "Talaş": "Nem dengesini harika sağlar ancak mutlaka işlenmemiş ve verniksiz odunlardan elde edilmiş olmalıdır. Kimyasal içerikli talaşlar toprağa zehir saçar.",
+  "Kuruyemiş Kabukları": "Toprakta hava boşlukları yaratır. Tuzsuz olmalarına dikkat etmeli ve çok sert oldukları için mutlaka kırarak eklemelisin.",
+
+  // DİKKAT
+  "Turunçgiller (Limon, Portakal)": "Çok asidiktir. Fazla miktarda eklemek toprağın pH dengesini bozar ve faydalı solucanların ölümüne neden olur. Küçük parçalar halinde ve az miktarda tercih edilmelidir.",
+  "Ceviz Yaprağı": "İçeriğindeki \"Juglon\" maddesi doğal bir ot öldürücüdür. Diğer bitkilerin büyümesini engelleyebileceği için çok az miktarda kullanılmalıdır.",
+  "Soğan ve Sarımsak": "Özellikle solucan kompostu (vermikompost) yapıyorsan, bu bitkilerin keskin kokusu ve asit yapısı solucanları rahatsız eder. Kabuklarını kullanmak daha güvenlidir.",
+
+  // YASAKLILAR
+  "Et, Kemik ve Süt Ürünleri": "Bu gıdalar hızla çürür ve çok kötü koku yayar. Ayrıca fare, sinek ve diğer zararlı haşereleri kompost alanına çeker. Ayrışmaları yıllar sürebilir.",
+  "Yağlar (Kızartma vb.)": "Yağ, toprağın ve kompostun etrafını bir film tabakası gibi sararak oksijen akışını keser. Toprağı boğar ve ayrışma sürecini tamamen durdurur.",
+  "İşlenmiş Yemek Artıkları": "İçerdikleri tuz ve baharatlar topraktaki mikroorganizmaları ve yararlı canlıları öldürür.",
+  "Kedi Kumu ve Dışkı": "Evcil hayvan dışkıları ciddi parazit ve patojen riski taşır. Bu zararlılar bitkiler aracılığıyla insana geçebilir.",
+  "Kuşe Kağıt ve Dergiler": "Parlak kaplamalar plastik içerir ve kullanılan mürekkeplerdeki ağır metaller toprağa karışarak besin zincirine girer.",
+  "Sentetik Çay Poşeti": "Çoğu modern çay poşeti mikroplastik içerir. Bunlar doğada çözünmez, sadece küçülerek toprağı kirletir."
+};
+
+
+const WasteCard: React.FC<{ item: WasteItem; onClick?: () => void }> = ({ item, onClick }) => {
   let badgeStyle = '';
   let borderStyle = '';
+  const hasDetail = !!DETAIL_DESCRIPTIONS[item.name];
 
   switch (item.category) {
     case 'green':
@@ -57,43 +92,46 @@ const WasteCard: React.FC<{ item: WasteItem }> = ({ item }) => {
   }
 
   return (
-    <div className={`bg-background-surface rounded-card border border-border shadow-card hover:shadow-hover transition-all duration-300 p-5 group flex flex-col h-full ${borderStyle}`}>
+    <div
+      onClick={hasDetail ? onClick : undefined}
+      className={`bg-background-surface rounded-card border border-border shadow-card hover:shadow-hover transition-all duration-300 p-5 group flex flex-col h-full ${borderStyle} ${hasDetail ? 'cursor-pointer' : ''}`}
+    >
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="bg-background-base p-3 rounded-2xl group-hover:scale-110 transition-transform duration-300 overflow-hidden">
-           {item.imageUrl ? (
-             <img src={item.imageUrl} alt={item.name} className="w-6 h-6 object-cover" />
-           ) : (
-             getIcon(item.icon)
-           )}
+          {item.imageUrl ? (
+            <img src={item.imageUrl} alt={item.name} className="w-6 h-6 object-cover" />
+          ) : (
+            getIcon(item.icon)
+          )}
         </div>
         <span className={`inline-flex items-center px-2.5 py-1 rounded-pill text-xs font-bold ${badgeStyle}`}>
-           {item.category === 'prohibited' && <Ban size={12} className="mr-1.5" />}
-           {item.category === 'green' && <CheckCircle size={12} className="mr-1.5" />}
-           {item.category === 'brown' && <Layers size={12} className="mr-1.5" />}
-           {item.category === 'caution' && <AlertTriangle size={12} className="mr-1.5" />}
-           
-           {item.category === 'green' && 'Yeşil (Azot)'}
-           {item.category === 'brown' && 'Kahverengi (Karbon)'}
-           {item.category === 'caution' && 'Dikkat'}
-           {item.category === 'prohibited' && 'Toprağa Atılmaz'}
+          {item.category === 'prohibited' && <Ban size={12} className="mr-1.5" />}
+          {item.category === 'green' && <CheckCircle size={12} className="mr-1.5" />}
+          {item.category === 'brown' && <Layers size={12} className="mr-1.5" />}
+          {item.category === 'caution' && <AlertTriangle size={12} className="mr-1.5" />}
+
+          {item.category === 'green' && 'Yeşil (Azot)'}
+          {item.category === 'brown' && 'Kahverengi (Karbon)'}
+          {item.category === 'caution' && 'Dikkat'}
+          {item.category === 'prohibited' && 'Toprağa Atılmaz'}
         </span>
       </div>
 
       <h3 className="font-bold text-lg text-text-primary mb-2 group-hover:text-primary transition-colors">{item.name}</h3>
-      
+
       {/* Content */}
       <div className="space-y-3 flex-grow">
         {item.prep_steps && (
-            <p className="text-sm text-text-muted leading-relaxed">
-               <span className="font-semibold text-text-secondary">Hazırlık:</span> {item.prep_steps}
-            </p>
+          <p className="text-sm text-text-muted leading-relaxed">
+            <span className="font-semibold text-text-secondary">Hazırlık:</span> {item.prep_steps}
+          </p>
         )}
-        
+
         {item.soil_method && (
-           <p className="text-sm text-text-secondary font-medium bg-background-subtle p-2 rounded-lg inline-block">
-             💡 {item.soil_method}
-           </p>
+          <p className="text-sm text-text-secondary font-medium bg-background-subtle p-2 rounded-lg inline-block">
+            💡 {item.soil_method}
+          </p>
         )}
 
         {item.never_soil_warning && (
@@ -103,6 +141,14 @@ const WasteCard: React.FC<{ item: WasteItem }> = ({ item }) => {
           </div>
         )}
       </div>
+
+      {/* Alt bilgi ipucu */}
+      {hasDetail && (
+        <div className="mt-4 pt-3 border-t border-border flex items-center text-xs text-primary font-medium">
+          <Info size={14} className="mr-1" />
+          Detay için tıkla
+        </div>
+      )}
     </div>
   );
 };
@@ -110,7 +156,8 @@ const WasteCard: React.FC<{ item: WasteItem }> = ({ item }) => {
 const WasteGuide: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState<'all' | 'green' | 'brown' | 'prohibited'>('all');
-  
+  const [selectedItem, setSelectedItem] = useState<WasteItem | null>(null);
+
   // Use the new hook instead of static constant
   const { items, loading } = useWasteItems();
 
@@ -134,62 +181,72 @@ const WasteGuide: React.FC = () => {
     <div className="max-w-6xl mx-auto px-4 md:px-6 py-12">
       {/* Header Section */}
       <div className="mb-12 text-center max-w-2xl mx-auto">
-        <h2 className="text-3xl md:text-4xl font-extrabold text-text-primary mb-4">Evsel Atık Rehberi</h2>
-        <p className="text-text-secondary text-lg">
-           Mutfak çöpünüzü "siyah altına" dönüştürün. Sağlıklı bir toprak için denge ve bilgi şarttır.
+        <h2 className="text-3xl md:text-4xl font-extrabold mb-4 text-text-primary">Evsel Atık Rehberi</h2>
+        <p className="text-lg text-text-secondary">
+          Mutfak çöpünüzü "siyah altına" dönüştürün. Sağlıklı bir toprak için denge ve bilgi şarttır.
         </p>
+      </div>
+
+      {/* NEW: Compost Animation (Moved here) */}
+      <div className="mb-16">
+        <CompostAnimation />
+      </div>
+
+      {/* Carbon Calculator */}
+      <div className="mb-16">
+        <CarbonCalculator />
       </div>
 
       {/* Educational Cards */}
       <div className="grid md:grid-cols-3 gap-6 mb-12">
-         {/* Green Card */}
-         <div className="bg-primary-soft/50 border border-primary-soft rounded-card p-6 flex items-start space-x-4">
-            <div className="bg-white p-3 rounded-full text-primary shadow-sm shrink-0">
-               <Leaf size={24} />
-            </div>
-            <div>
-               <h3 className="font-bold text-primary-700 text-lg">Yeşiller (Azot)</h3>
-               <p className="text-sm text-primary-700/80 mt-1 leading-relaxed">
-                  Sebze, meyve, çay. Bozunmayı başlatır. 
-                  <span className="block font-semibold mt-1">Oran: 1 Birim</span>
-               </p>
-            </div>
-         </div>
-         
-         {/* Brown Card */}
-         <div className="bg-secondary-soft/50 border border-secondary-soft rounded-card p-6 flex items-start space-x-4">
-            <div className="bg-white p-3 rounded-full text-secondary shadow-sm shrink-0">
-               <Layers size={24} />
-            </div>
-            <div>
-               <h3 className="font-bold text-secondary-700 text-lg">Kahverengiler</h3>
-               <p className="text-sm text-secondary-700/80 mt-1 leading-relaxed">
-                  Kuru yaprak, kağıt. Kokuyu engeller.
-                  <span className="block font-semibold mt-1">Oran: 2 Birim</span>
-               </p>
-            </div>
-         </div>
+        {/* Green Card */}
+        <div className="bg-primary-soft/50 border border-primary-soft rounded-card p-6 flex items-start space-x-4">
+          <div className="bg-white p-3 rounded-full text-primary shadow-sm shrink-0">
+            <Leaf size={24} />
+          </div>
+          <div>
+            <h3 className="font-bold text-primary-700 text-lg">Yeşiller (Azot)</h3>
+            <p className="text-sm text-primary-700/80 mt-1 leading-relaxed">
+              Sebze, meyve, çay. Bozunmayı başlatır.
+              <span className="block font-semibold mt-1">Oran: 1 Birim</span>
+            </p>
+          </div>
+        </div>
 
-         {/* Rules Card */}
-         <div className="bg-blue-50 border border-blue-100 rounded-card p-6 flex items-start space-x-4">
-            <div className="bg-white p-3 rounded-full text-status-info shadow-sm shrink-0">
-               <Wind size={24} />
+        {/* Brown Card */}
+        <div className="bg-secondary-soft/50 border border-secondary-soft rounded-card p-6 flex items-start space-x-4">
+          <div className="bg-white p-3 rounded-full text-secondary shadow-sm shrink-0">
+            <Layers size={24} />
+          </div>
+          <div>
+            <h3 className="font-bold text-secondary-700 text-lg">Kahverengiler</h3>
+            <p className="text-sm text-secondary-700/80 mt-1 leading-relaxed">
+              Kuru yaprak, kağıt. Kokuyu engeller.
+              <span className="block font-semibold mt-1">Oran: 2 Birim</span>
+            </p>
+          </div>
+        </div>
+
+        {/* Rules Card */}
+        <div className="bg-blue-50 border border-blue-100 rounded-card p-6 flex items-start space-x-4">
+          <div className="bg-white p-3 rounded-full text-status-info shadow-sm shrink-0">
+            <Wind size={24} />
+          </div>
+          <div>
+            <h3 className="font-bold text-blue-800 text-lg">4 Altın Kural</h3>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-1 text-sm text-blue-700/80">
+              <span className="flex items-center">✂️ Küçült</span>
+              <span className="flex items-center">🥣 Karıştır</span>
+              <span className="flex items-center">💧 Nemlendir</span>
+              <span className="flex items-center">💨 Havalandır</span>
             </div>
-            <div>
-               <h3 className="font-bold text-blue-800 text-lg">4 Altın Kural</h3>
-               <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-1 text-sm text-blue-700/80">
-                  <span className="flex items-center">✂️ Küçült</span>
-                  <span className="flex items-center">🥣 Karıştır</span>
-                  <span className="flex items-center">💧 Nemlendir</span>
-                  <span className="flex items-center">💨 Havalandır</span>
-               </div>
-            </div>
-         </div>
+          </div>
+        </div>
       </div>
 
       {/* Controls: Tabs & Search */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 sticky top-20 z-30 bg-background-base/95 backdrop-blur py-4 rounded-xl -mx-2 px-2 transition-all">
-        
+
         {/* Tabs */}
         <div className="flex flex-wrap gap-2">
           {tabs.map(tab => (
@@ -197,8 +254,8 @@ const WasteGuide: React.FC = () => {
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
               className={`px-4 py-2 rounded-pill text-sm font-semibold transition-all duration-200 border
-                ${activeTab === tab.id 
-                  ? 'bg-text-primary text-white border-text-primary shadow-soft' 
+                ${activeTab === tab.id
+                  ? 'bg-text-primary text-white border-text-primary shadow-soft'
                   : 'bg-white text-text-secondary border-border hover:bg-background-subtle'}`}
             >
               {tab.label}
@@ -209,9 +266,9 @@ const WasteGuide: React.FC = () => {
         {/* Search */}
         <div className="relative w-full md:w-72 group">
           <Search className="absolute left-3 top-3 text-text-muted group-focus-within:text-primary transition-colors" size={18} />
-          <input 
-            type="text" 
-            placeholder="Elma, pil, karton..." 
+          <input
+            type="text"
+            placeholder="Elma, pil, karton..."
             className="w-full pl-10 pr-4 py-2.5 rounded-input border border-border bg-white focus:ring-2 focus:ring-primary-soft focus:border-primary transition-all outline-none text-sm text-text-primary placeholder:text-text-muted"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -227,28 +284,112 @@ const WasteGuide: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredItems.map(item => (
-            <WasteCard key={item.id} item={item} />
+            <WasteCard key={item.id} item={item} onClick={() => setSelectedItem(item)} />
           ))}
         </div>
       )}
 
       {!loading && filteredItems.length === 0 && (
-         <div className="flex flex-col items-center justify-center py-20 bg-background-subtle rounded-card border border-dashed border-border text-center">
-           <div className="bg-white p-4 rounded-full shadow-soft mb-4">
-             <Filter size={32} className="text-text-muted" />
-           </div>
-           <h3 className="text-lg font-bold text-text-primary">Sonuç Bulunamadı</h3>
-           <p className="text-text-muted max-w-xs mx-auto mt-2">
-             Aradığınız kriterlere uygun bir atık türü rehberimizde yok. Asistan'a sormayı deneyin.
-           </p>
-           <button 
-             onClick={() => {setSearchTerm(''); setActiveTab('all')}} 
-             className="mt-6 text-primary font-bold text-sm hover:underline"
-           >
-             Filtreleri Temizle
-           </button>
-         </div>
+        <div className="flex flex-col items-center justify-center py-20 bg-background-subtle rounded-card border border-dashed border-border text-center">
+          <div className="bg-white p-4 rounded-full shadow-soft mb-4">
+            <Filter size={32} className="text-text-muted" />
+          </div>
+          <h3 className="text-lg font-bold text-text-primary">Sonuç Bulunamadı</h3>
+          <p className="text-text-muted max-w-xs mx-auto mt-2">
+            Aradığınız kriterlere uygun bir atık türü rehberimizde yok. Asistan'a sormayı deneyin.
+          </p>
+          <button
+            onClick={() => { setSearchTerm(''); setActiveTab('all') }}
+            className="mt-6 text-primary font-bold text-sm hover:underline"
+          >
+            Filtreleri Temizle
+          </button>
+        </div>
       )}
+
+      {/* DETAY MODAL */}
+      <AnimatePresence>
+        {selectedItem && DETAIL_DESCRIPTIONS[selectedItem.name] && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+            onClick={() => setSelectedItem(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-card shadow-2xl max-w-lg w-full overflow-hidden"
+            >
+              {/* Header */}
+              <div className={`p-4 flex items-center justify-between ${selectedItem.category === 'green' ? 'bg-primary-soft' :
+                  selectedItem.category === 'brown' ? 'bg-secondary-soft' :
+                    selectedItem.category === 'caution' ? 'bg-orange-50' : 'bg-red-50'
+                }`}>
+                <div className="flex items-center space-x-3">
+                  <div className="bg-white p-2 rounded-xl shadow-sm">
+                    {getIcon(selectedItem.icon)}
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg text-text-primary">{selectedItem.name}</h3>
+                    <span className={`text-xs font-medium ${selectedItem.category === 'green' ? 'text-primary-700' :
+                        selectedItem.category === 'brown' ? 'text-secondary-700' :
+                          selectedItem.category === 'caution' ? 'text-orange-700' : 'text-red-700'
+                      }`}>
+                      {selectedItem.category === 'green' && '🌱 Yeşil (Azot)'}
+                      {selectedItem.category === 'brown' && '🍂 Kahverengi (Karbon)'}
+                      {selectedItem.category === 'caution' && '⚠️ Dikkat'}
+                      {selectedItem.category === 'prohibited' && '🚫 Toprağa Atılmaz'}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSelectedItem(null)}
+                  className="p-2 rounded-full hover:bg-white/50 transition-colors text-text-muted"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="p-6">
+                <div className="flex items-start space-x-3 mb-4">
+                  <div className={`p-2 rounded-lg shrink-0 ${selectedItem.category === 'prohibited' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'
+                    }`}>
+                    <Info size={20} />
+                  </div>
+                  <p className="text-text-secondary leading-relaxed">
+                    {DETAIL_DESCRIPTIONS[selectedItem.name]}
+                  </p>
+                </div>
+
+                {/* Quick Info */}
+                {selectedItem.prep_steps && (
+                  <div className="mt-4 p-3 bg-background-subtle rounded-lg">
+                    <p className="text-sm text-text-muted">
+                      <span className="font-semibold text-text-secondary">Hazırlık:</span> {selectedItem.prep_steps}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className="px-6 pb-6">
+                <button
+                  onClick={() => setSelectedItem(null)}
+                  className="w-full py-3 bg-text-primary hover:bg-text-primary/90 text-white font-bold rounded-button transition-colors"
+                >
+                  Anladım
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

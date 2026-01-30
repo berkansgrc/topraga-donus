@@ -1,102 +1,108 @@
 <!DOCTYPE html>
 <html lang="tr">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Toprağa Dönüş</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- Leaflet Map CSS & JS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            fontFamily: {
-              sans: ['Outfit', 'sans-serif'],
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Toprağa Dönüş</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <!-- Leaflet Map CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'sans-serif'],
+          },
+          colors: {
+            background: {
+              base: '#FBF7F0',
+              surface: '#FFFFFF',
+              subtle: '#F3EFE7'
             },
-            colors: {
-              background: {
-                base: '#FBF7F0',
-                surface: '#FFFFFF',
-                subtle: '#F3EFE7'
-              },
-              text: {
-                primary: '#1B1A17',
-                secondary: '#4B463D',
-                muted: '#6B6458',
-                inverse: '#FFFFFF'
-              },
-              primary: {
-                DEFAULT: '#2F6B3C', // Forest Green 500
-                600: '#275A33',
-                700: '#1F4728',
-                soft: '#E7F2EA', // Soft BG
-              },
-              secondary: {
-                DEFAULT: '#7A4E2D', // Soil Brown 500
-                600: '#644026',
-                700: '#4D321D',
-                soft: '#F3E8DF', // Soft BG
-              },
-              accent: {
-                DEFAULT: '#6B8E23', // Moss
-                soft: '#EEF5DF'
-              },
-              status: {
-                success: '#2F6B3C',
-                warning: '#B7791F',
-                error: '#B42318',
-                info: '#2563EB'
-              },
-              border: {
-                DEFAULT: 'rgba(27,26,23,0.12)',
-                strong: 'rgba(27,26,23,0.18)'
-              }
+            text: {
+              primary: '#1B1A17',
+              secondary: '#4B463D',
+              muted: '#6B6458',
+              inverse: '#FFFFFF'
             },
-            borderRadius: {
-              'card': '16px',
-              'button': '12px',
-              'input': '12px',
-              'pill': '999px'
+            primary: {
+              DEFAULT: '#2F6B3C',
+              600: '#275A33',
+              700: '#1F4728',
+              soft: '#E7F2EA',
             },
-            boxShadow: {
-              'card': '0 10px 30px rgba(27,26,23,0.05)',
-              'hover': '0 14px 36px rgba(27,26,23,0.10)',
-              'soft': '0 4px 12px rgba(27,26,23,0.03)'
+            secondary: {
+              DEFAULT: '#7A4E2D',
+              600: '#644026',
+              700: '#4D321D',
+              soft: '#F3E8DF',
             },
-            backgroundImage: {
-              'hero-gradient': 'linear-gradient(135deg, rgba(47,107,60,0.08) 0%, rgba(122,78,45,0.06) 50%, rgba(251,247,240,0.0) 100%)',
+            accent: {
+              DEFAULT: '#6B8E23',
+              soft: '#EEF5DF'
+            },
+            status: {
+              success: '#2F6B3C',
+              warning: '#B7791F',
+              error: '#B42318',
+              info: '#2563EB'
+            },
+            border: {
+              DEFAULT: 'rgba(27,26,23,0.12)',
+              strong: 'rgba(27,26,23,0.18)'
             }
+          },
+          borderRadius: {
+            'card': '16px',
+            'button': '12px',
+            'input': '12px',
+            'pill': '999px'
+          },
+          boxShadow: {
+            'card': '0 10px 30px rgba(27,26,23,0.05)',
+            'hover': '0 14px 36px rgba(27,26,23,0.10)',
+            'soft': '0 4px 12px rgba(27,26,23,0.03)'
+          },
+          backgroundImage: {
+            'hero-gradient': 'linear-gradient(135deg, rgba(47,107,60,0.08) 0%, rgba(122,78,45,0.06) 50%, rgba(251,247,240,0.0) 100%)',
           }
         }
       }
-    </script>
-    <style>
-      /* Micro-texture noise */
-      .bg-texture {
-        position: relative;
-      }
-      .bg-texture::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        opacity: 0.03;
-        pointer-events: none;
-        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-        z-index: 0;
-      }
-      .content-relative {
-        position: relative;
-        z-index: 1;
-      }
-    </style>
+    }
+  </script>
+  <style>
+    /* Micro-texture noise */
+    .bg-texture {
+      position: relative;
+    }
+
+    .bg-texture::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.03;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      z-index: 0;
+    }
+
+    .content-relative {
+      position: relative;
+      z-index: 1;
+    }
+  </style>
   <script type="importmap">
 {
   "imports": {
@@ -111,10 +117,12 @@
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
+  <link rel="stylesheet" href="/index.css">
 </head>
-  <body class="bg-background-base text-text-primary font-sans antialiased">
-    <div id="root"></div>
+
+<body class="bg-background-base text-text-primary font-sans antialiased">
+  <div id="root"></div>
   <script type="module" src="/index.tsx"></script>
 </body>
+
 </html>

@@ -9,6 +9,10 @@ import AdminLogin from './components/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
 import ProjectGallery from './components/ProjectGallery';
 import Contribute from './components/Contribute';
+import Blog from './components/Blog';
+import FAQ from './components/FAQ';
+import SchoolRegister from './components/SchoolRegister';
+import PrivacyPolicy from './components/PrivacyPolicy';
 import { ViewState } from './types';
 import {
   ArrowRight, Recycle, Leaf, Map as MapIcon,
@@ -270,6 +274,8 @@ const HomeHero = ({ setView }: { setView: (v: ViewState) => void }) => (
       </div>
     </div>
 
+
+
     {/* Integrated Project Goal / Mission Section */}
     <MissionSection />
 
@@ -299,6 +305,14 @@ function App() {
         return <AdminLogin setView={setView} />;
       case ViewState.ADMIN_DASHBOARD:
         return <AdminDashboard setView={setView} />;
+      case ViewState.BLOG:
+        return <Blog />;
+      case ViewState.FAQ:
+        return <FAQ />;
+      case ViewState.SCHOOL_REGISTER:
+        return <SchoolRegister />;
+      case ViewState.PRIVACY_POLICY:
+        return <PrivacyPolicy />;
       default:
         return <HomeHero setView={setView} />;
     }
