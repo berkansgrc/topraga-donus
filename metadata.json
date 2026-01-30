@@ -1,0 +1,7 @@
+{
+  "name": "Toprağa Dönüş",
+  "description": "Ev atıklarını doğru yönetmeyi öğreten, kompost takibi ve geri dönüşüm istasyonu haritası sunan eğitim platformu.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
