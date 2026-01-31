@@ -1,0 +1,16 @@
+# Toprağa Dönüş - robots.txt
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /_next/
+Disallow: /api/
+
+# Sitemap
+Sitemap: https://topragadonus.com/sitemap.xml
+
+# Google Bot
+User-agent: Googlebot
+Allow: /
+
+# Crawl Delay (isteğe bağlı)
+Crawl-delay: 1
