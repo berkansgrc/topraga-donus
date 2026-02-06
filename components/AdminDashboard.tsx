@@ -1,21 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../services/supabaseClient';
-import { ViewState } from '../types';
+import { useNavigate } from 'react-router-dom';
 import {
   LogOut, Plus, Trash2, LayoutDashboard, MapPin,
   Recycle, Loader2, Image as ImageIcon, X, Palette, Database, Copy, Inbox, FlaskConical, Sprout, Ruler, Leaf, Lightbulb, Map, School, CheckCircle, XCircle, Newspaper, Clock, User, Star, Eye
 } from 'lucide-react';
 import LocationPicker from './LocationPicker';
+import AdminMap from './AdminMap';
 
-interface AdminDashboardProps {
-  setView: (view: ViewState) => void;
-}
+interface AdminDashboardProps { }
 
-const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
-  const [activeTab, setActiveTab] = useState<'waste' | 'stations' | 'gallery' | 'suggestions' | 'lab' | 'schools' | 'blog'>('waste');
+const AdminDashboard: React.FC<AdminDashboardProps> = () => {
+  const [activeTab, setActiveTab] = useState<'waste' | 'stations' | 'gallery' | 'suggestions' | 'lab' | 'schools' | 'blog' | 'map'>('waste');
   const [loading, setLoading] = useState(false);
   const [listData, setListData] = useState<any[]>([]);
   const [tableError, setTableError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   // Form States
   const [showModal, setShowModal] = useState(false);
@@ -32,7 +32,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
     const checkSession = async () => {
       const { data } = await supabase.auth.getSession();
       if (!data.session) {
-        setView(ViewState.ADMIN_LOGIN);
+        navigate('/admin/login');
         return;
       }
       fetchData();
@@ -84,7 +84,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    setView(ViewState.HOME);
+    navigate('/');
   };
 
   const uploadImage = async (file: File) => {
@@ -156,6 +156,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ setView }) => {
         : { ...finalData, ...(imageUrl && { imageUrl }) };
 
       if (!payload.id) delete payload.id;
+
+      // Eğer bu bir blog yazısıysa ve öne çıkan olarak işaretlendiyse
+      if (activeTab === 'blog' && payload.is_featured) {
+        // Önce diğer tüm öne çıkanları kaldır
+        await supabase
+          .from('blog_posts')
+          .update({ is_featured: false })
+          .eq('is_featured', true);
+      }
 
       const { error } = await supabase.from(tableName).insert([payload]);
 
@@ -604,6 +613,12 @@ create policy "Admin Manage Schools" on school_registrations for all to authenti
           >
             <Newspaper className="mr-2" size={20} /> Blog / Haberler
           </button>
+          <button
+            onClick={() => setActiveTab('map')}
+            className={`px-6 py-3 rounded-card font-bold flex items-center transition-all ${activeTab === 'map' ? 'bg-teal-600 text-white shadow-card' : 'bg-white text-text-secondary hover:bg-background-subtle'}`}
+          >
+            <Map className="mr-2" size={20} /> Harita Görünümü
+          </button>
         </div>
 
         <div className="flex justify-between items-center mb-6">
@@ -614,6 +629,7 @@ create policy "Admin Manage Schools" on school_registrations for all to authenti
                   activeTab === 'suggestions' ? 'Kullanıcı Katkıları' :
                     activeTab === 'schools' ? 'Okul Başvuruları' :
                       activeTab === 'blog' ? 'Blog Yazıları' :
+                        activeTab === 'map' ? 'İstasyon Haritası ve Analiz' :
                         'Görsel Galerisi'}
           </h2>
           {activeTab !== 'suggestions' && activeTab !== 'schools' && (
@@ -661,6 +677,8 @@ create policy "Admin Manage Schools" on school_registrations for all to authenti
             <div className="p-12 text-center text-red-400">
               Veritabanı tablosu eksik olduğu için liste yüklenemedi.
             </div>
+          ) : activeTab === 'map' ? (
+             <AdminMap />
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left">

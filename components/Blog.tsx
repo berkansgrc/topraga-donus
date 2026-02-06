@@ -66,6 +66,7 @@ const Blog: React.FC = () => {
                     .from('blog_posts')
                     .select('*')
                     .eq('is_published', true)
+                    .order('is_featured', { ascending: false })
                     .order('created_at', { ascending: false });
 
                 if (error) {
@@ -82,6 +83,13 @@ const Blog: React.FC = () => {
 
         fetchBlogPosts();
     }, []);
+
+    // Haber detayı açıldığında sayfayı en üste kaydır
+    useEffect(() => {
+        if (selectedPost) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }, [selectedPost]);
 
     const filteredPosts = blogPosts.filter(post => {
         const matchesCategory = activeCategory === 'all' || post.category === activeCategory;

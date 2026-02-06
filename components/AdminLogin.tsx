@@ -1,17 +1,21 @@
 import React, { useState } from 'react';
 import { supabase } from '../services/supabaseClient';
-import { ViewState } from '../types';
+import { useNavigate } from 'react-router-dom';
 import { Lock, Loader2, ArrowLeft } from 'lucide-react';
+import { useToast } from '../context/ToastContext';
 
 interface AdminLoginProps {
-  setView: (view: ViewState) => void;
+  // setView prop is removed
 }
 
-const AdminLogin: React.FC<AdminLoginProps> = ({ setView }) => {
+const AdminLogin: React.FC<AdminLoginProps> = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
+
+  const { addToast } = useToast();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,10 +31,13 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ setView }) => {
       if (error) throw error;
 
       if (data.user) {
-        setView(ViewState.ADMIN_DASHBOARD);
+        addToast('Giriş başarılı! Yönlendiriliyorsunuz...', 'success');
+        navigate('/admin/dashboard');
       }
     } catch (err: any) {
-      setError(err.message || 'Giriş başarısız. Lütfen bilgilerinizi kontrol edin.');
+      const message = err.message || 'Giriş başarısız. Lütfen bilgilerinizi kontrol edin.';
+      setError(message);
+      addToast(message, 'error');
     } finally {
       setLoading(false);
     }
@@ -39,8 +46,8 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ setView }) => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background-base px-4">
       <div className="bg-white p-8 rounded-card shadow-card max-w-md w-full border border-border">
-        <button 
-          onClick={() => setView(ViewState.HOME)}
+        <button
+          onClick={() => navigate('/')}
           className="flex items-center text-text-muted hover:text-text-primary mb-6 transition-colors"
         >
           <ArrowLeft size={16} className="mr-2" />
@@ -52,7 +59,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ setView }) => {
             <Lock size={32} />
           </div>
         </div>
-        
+
         <h2 className="text-2xl font-bold text-center text-text-primary mb-2">Yönetici Girişi</h2>
         <p className="text-center text-text-secondary mb-8 text-sm">
           İçerik yönetim paneline erişmek için giriş yapın.
@@ -76,7 +83,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ setView }) => {
               required
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-semibold text-text-secondary mb-2">Şifre</label>
             <input

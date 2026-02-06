@@ -67,7 +67,11 @@ const DETAIL_DESCRIPTIONS: Record<string, string> = {
 };
 
 
-const WasteCard: React.FC<{ item: WasteItem; onClick?: () => void }> = ({ item, onClick }) => {
+const WasteCard: React.FC<{
+  item: WasteItem;
+  isSelected: boolean;
+  onToggle: () => void;
+}> = ({ item, isSelected, onToggle }) => {
   let badgeStyle = '';
   let borderStyle = '';
   const hasDetail = !!DETAIL_DESCRIPTIONS[item.name];
@@ -93,62 +97,112 @@ const WasteCard: React.FC<{ item: WasteItem; onClick?: () => void }> = ({ item, 
 
   return (
     <div
-      onClick={hasDetail ? onClick : undefined}
-      className={`bg-background-surface rounded-card border border-border shadow-card hover:shadow-hover transition-all duration-300 p-5 group flex flex-col h-full ${borderStyle} ${hasDetail ? 'cursor-pointer' : ''}`}
+      onClick={hasDetail ? onToggle : undefined}
+      className={`bg-background-surface rounded-card border shadow-card transition-all duration-300 group flex flex-col h-full relative overflow-hidden
+        ${isSelected ? 'border-primary ring-2 ring-primary/20 scale-[1.02] z-10' : `border-border hover:shadow-hover ${borderStyle}`}
+        ${hasDetail ? 'cursor-pointer' : ''}`}
     >
-      {/* Header */}
-      <div className="flex items-start justify-between mb-4">
-        <div className="bg-background-base p-3 rounded-2xl group-hover:scale-110 transition-transform duration-300 overflow-hidden">
-          {item.imageUrl ? (
-            <img src={item.imageUrl} alt={item.name} className="w-6 h-6 object-cover" />
-          ) : (
-            getIcon(item.icon)
-          )}
-        </div>
-        <span className={`inline-flex items-center px-2.5 py-1 rounded-pill text-xs font-bold ${badgeStyle}`}>
-          {item.category === 'prohibited' && <Ban size={12} className="mr-1.5" />}
-          {item.category === 'green' && <CheckCircle size={12} className="mr-1.5" />}
-          {item.category === 'brown' && <Layers size={12} className="mr-1.5" />}
-          {item.category === 'caution' && <AlertTriangle size={12} className="mr-1.5" />}
+      <AnimatePresence mode="wait">
+        {!isSelected ? (
+          <motion.div
+            key="summary"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="p-5 flex flex-col h-full"
+          >
+            {/* Header */}
+            <div className="flex items-start justify-between mb-4">
+              <div className="bg-background-base p-3 rounded-2xl group-hover:scale-110 transition-transform duration-300 overflow-hidden">
+                {item.imageUrl ? (
+                  <img src={item.imageUrl} alt={item.name} className="w-6 h-6 object-cover" />
+                ) : (
+                  getIcon(item.icon)
+                )}
+              </div>
+              <span className={`inline-flex items-center px-2.5 py-1 rounded-pill text-xs font-bold ${badgeStyle}`}>
+                {item.category === 'prohibited' && <Ban size={12} className="mr-1.5" />}
+                {item.category === 'green' && <CheckCircle size={12} className="mr-1.5" />}
+                {item.category === 'brown' && <Layers size={12} className="mr-1.5" />}
+                {item.category === 'caution' && <AlertTriangle size={12} className="mr-1.5" />}
 
-          {item.category === 'green' && 'Yeşil (Azot)'}
-          {item.category === 'brown' && 'Kahverengi (Karbon)'}
-          {item.category === 'caution' && 'Dikkat'}
-          {item.category === 'prohibited' && 'Toprağa Atılmaz'}
-        </span>
-      </div>
+                {item.category === 'green' && 'Yeşil'}
+                {item.category === 'brown' && 'Kahve'}
+                {item.category === 'caution' && 'Dikkat'}
+                {item.category === 'prohibited' && 'Yasak'}
+              </span>
+            </div>
 
-      <h3 className="font-bold text-lg text-text-primary mb-2 group-hover:text-primary transition-colors">{item.name}</h3>
+            <h3 className="font-bold text-lg text-text-primary mb-2 group-hover:text-primary transition-colors">{item.name}</h3>
 
-      {/* Content */}
-      <div className="space-y-3 flex-grow">
-        {item.prep_steps && (
-          <p className="text-sm text-text-muted leading-relaxed">
-            <span className="font-semibold text-text-secondary">Hazırlık:</span> {item.prep_steps}
-          </p>
+            {/* Content */}
+            <div className="space-y-3 flex-grow">
+              {item.prep_steps && (
+                <p className="text-sm text-text-muted leading-relaxed line-clamp-2">
+                  <span className="font-semibold text-text-secondary">Hazırlık:</span> {item.prep_steps}
+                </p>
+              )}
+
+              {item.soil_method && (
+                <p className="text-sm text-text-secondary font-medium bg-background-subtle p-2 rounded-lg inline-block">
+                  💡 {item.soil_method}
+                </p>
+              )}
+
+              {item.never_soil_warning && (
+                <div className="flex items-start space-x-2 text-xs text-status-error bg-red-50 p-2.5 rounded-lg">
+                  <AlertTriangle size={14} className="shrink-0 mt-0.5" />
+                  <span>{item.never_soil_warning}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Alt bilgi ipucu */}
+            {hasDetail && (
+              <div className="mt-4 pt-3 border-t border-border flex items-center text-xs text-primary font-medium">
+                <Info size={14} className="mr-1" />
+                Detay için tıkla
+              </div>
+            )}
+          </motion.div>
+        ) : (
+          <motion.div
+            key="detail"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="p-5 flex flex-col h-full bg-background-base/50"
+          >
+            <div className="flex items-start justify-between mb-3 border-b border-border/50 pb-2">
+              <h3 className="font-bold text-lg text-primary">{item.name} Detayı</h3>
+              <button className="text-text-muted hover:text-text-primary bg-white rounded-full p-1 shadow-sm">
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="flex-grow space-y-3 overflow-y-auto pr-1 custom-scrollbar" style={{ maxHeight: '300px' }}>
+              <p className="text-sm text-text-secondary leading-relaxed font-medium">
+                {DETAIL_DESCRIPTIONS[item.name]}
+              </p>
+
+              {item.prep_steps && (
+                <div className="bg-white p-3 rounded-lg border border-border shadow-sm">
+                  <span className="text-xs font-bold text-text-primary block mb-1">Hazırlık</span>
+                  <p className="text-xs text-text-muted">{item.prep_steps}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-3 pt-2 text-center">
+              <span className="text-xs text-primary font-semibold flex items-center justify-center cursor-pointer hover:underline">
+                Kapatmak için tıkla
+              </span>
+            </div>
+          </motion.div>
         )}
-
-        {item.soil_method && (
-          <p className="text-sm text-text-secondary font-medium bg-background-subtle p-2 rounded-lg inline-block">
-            💡 {item.soil_method}
-          </p>
-        )}
-
-        {item.never_soil_warning && (
-          <div className="flex items-start space-x-2 text-xs text-status-error bg-red-50 p-2.5 rounded-lg">
-            <AlertTriangle size={14} className="shrink-0 mt-0.5" />
-            <span>{item.never_soil_warning}</span>
-          </div>
-        )}
-      </div>
-
-      {/* Alt bilgi ipucu */}
-      {hasDetail && (
-        <div className="mt-4 pt-3 border-t border-border flex items-center text-xs text-primary font-medium">
-          <Info size={14} className="mr-1" />
-          Detay için tıkla
-        </div>
-      )}
+      </AnimatePresence>
     </div>
   );
 };
@@ -282,9 +336,14 @@ const WasteGuide: React.FC = () => {
           <Loader2 className="animate-spin" size={48} />
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 align-top">
           {filteredItems.map(item => (
-            <WasteCard key={item.id} item={item} onClick={() => setSelectedItem(item)} />
+            <WasteCard
+              key={item.id}
+              item={item}
+              isSelected={selectedItem?.id === item.id}
+              onToggle={() => setSelectedItem(selectedItem?.id === item.id ? null : item)}
+            />
           ))}
         </div>
       )}
@@ -307,89 +366,37 @@ const WasteGuide: React.FC = () => {
         </div>
       )}
 
-      {/* DETAY MODAL */}
-      <AnimatePresence>
-        {selectedItem && DETAIL_DESCRIPTIONS[selectedItem.name] && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
-            onClick={() => setSelectedItem(null)}
+      {/* Oyunlar CTA Bölümü */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="mt-16 relative overflow-hidden rounded-card bg-gradient-to-br from-primary via-primary-600 to-secondary p-8 md:p-12 text-center"
+      >
+        {/* Decorative elements */}
+        <div className="absolute top-0 left-0 w-32 h-32 bg-white/10 rounded-full -translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute bottom-0 right-0 w-48 h-48 bg-white/10 rounded-full translate-x-1/4 translate-y-1/4" />
+        <div className="absolute top-1/2 left-1/4 text-6xl opacity-20 animate-bounce">🌱</div>
+        <div className="absolute top-1/4 right-1/4 text-4xl opacity-20 animate-pulse">🍃</div>
+
+        <div className="relative z-10">
+          <span className="inline-block text-6xl mb-4 animate-bounce">🎮</span>
+          <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">
+            Şimdi Eğlenerek Öğrenme Zamanı!
+          </h2>
+          <p className="text-lg text-white/90 max-w-xl mx-auto mb-8">
+            Öğrendiklerini eğlenceli oyunlarla pekiştir! Atık sınıflandırma, bilgi yarışması ve daha fazlası seni bekliyor.
+          </p>
+          <a
+            href="/games"
+            className="inline-flex items-center gap-3 px-8 py-4 bg-white text-primary font-bold text-lg rounded-button shadow-lg hover:shadow-xl hover:scale-105 transition-all"
           >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-card shadow-2xl max-w-lg w-full overflow-hidden"
-            >
-              {/* Header */}
-              <div className={`p-4 flex items-center justify-between ${selectedItem.category === 'green' ? 'bg-primary-soft' :
-                  selectedItem.category === 'brown' ? 'bg-secondary-soft' :
-                    selectedItem.category === 'caution' ? 'bg-orange-50' : 'bg-red-50'
-                }`}>
-                <div className="flex items-center space-x-3">
-                  <div className="bg-white p-2 rounded-xl shadow-sm">
-                    {getIcon(selectedItem.icon)}
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-lg text-text-primary">{selectedItem.name}</h3>
-                    <span className={`text-xs font-medium ${selectedItem.category === 'green' ? 'text-primary-700' :
-                        selectedItem.category === 'brown' ? 'text-secondary-700' :
-                          selectedItem.category === 'caution' ? 'text-orange-700' : 'text-red-700'
-                      }`}>
-                      {selectedItem.category === 'green' && '🌱 Yeşil (Azot)'}
-                      {selectedItem.category === 'brown' && '🍂 Kahverengi (Karbon)'}
-                      {selectedItem.category === 'caution' && '⚠️ Dikkat'}
-                      {selectedItem.category === 'prohibited' && '🚫 Toprağa Atılmaz'}
-                    </span>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setSelectedItem(null)}
-                  className="p-2 rounded-full hover:bg-white/50 transition-colors text-text-muted"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-
-              {/* Content */}
-              <div className="p-6">
-                <div className="flex items-start space-x-3 mb-4">
-                  <div className={`p-2 rounded-lg shrink-0 ${selectedItem.category === 'prohibited' ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'
-                    }`}>
-                    <Info size={20} />
-                  </div>
-                  <p className="text-text-secondary leading-relaxed">
-                    {DETAIL_DESCRIPTIONS[selectedItem.name]}
-                  </p>
-                </div>
-
-                {/* Quick Info */}
-                {selectedItem.prep_steps && (
-                  <div className="mt-4 p-3 bg-background-subtle rounded-lg">
-                    <p className="text-sm text-text-muted">
-                      <span className="font-semibold text-text-secondary">Hazırlık:</span> {selectedItem.prep_steps}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* Footer */}
-              <div className="px-6 pb-6">
-                <button
-                  onClick={() => setSelectedItem(null)}
-                  className="w-full py-3 bg-text-primary hover:bg-text-primary/90 text-white font-bold rounded-button transition-colors"
-                >
-                  Anladım
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            <span className="text-2xl">🕹️</span>
+            Oyunlara Git
+            <span className="text-2xl">→</span>
+          </a>
+        </div>
+      </motion.div>
     </div>
   );
 };

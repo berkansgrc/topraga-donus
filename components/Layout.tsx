@@ -1,27 +1,33 @@
 import React from 'react';
-import { Sprout, Map, BookOpen, FlaskConical, Menu, X, ShieldCheck, Image as ImageIcon, Newspaper, HelpCircle, School } from 'lucide-react';
-import { ViewState } from '../types';
+import { Sprout, Map, BookOpen, FlaskConical, Menu, X, Image as ImageIcon, Newspaper, HelpCircle, School } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import MobileNav from './MobileNav';
 
 interface LayoutProps {
-  currentView: ViewState;
-  setView: (view: ViewState) => void;
   children: React.ReactNode;
 }
 
-const Layout: React.FC<LayoutProps> = ({ currentView, setView, children }) => {
+const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const currentPath = location.pathname;
 
   // Navigasyon elemanları
   const navItems = [
-    { id: ViewState.HOME, label: 'Ana Sayfa', icon: Sprout },
-    { id: ViewState.GUIDE, label: 'Atık Rehberi', icon: BookOpen },
-    { id: ViewState.LAB, label: 'Kompost Lab', icon: FlaskConical },
-    { id: ViewState.MAP, label: 'İstasyon Haritası', icon: Map },
-    { id: ViewState.GALLERY, label: 'Galeri', icon: ImageIcon },
-    { id: ViewState.BLOG, label: 'Haberler', icon: Newspaper },
+    { path: '/', label: 'Ana Sayfa', icon: Sprout },
+    { path: '/guide', label: 'Atık Rehberi', icon: BookOpen },
+    { path: '/lab', label: 'Kompost Lab', icon: FlaskConical },
+    { path: '/map', label: 'İstasyon Haritası', icon: Map },
+    { path: '/gallery', label: 'Galeri', icon: ImageIcon },
+    { path: '/blog', label: 'Haberler', icon: Newspaper },
   ];
+
+  const handleNavigate = (path: string) => {
+    navigate(path);
+    setIsMenuOpen(false);
+  };
 
   return (
     <div className="min-h-screen bg-background-base flex flex-col font-sans bg-texture selection:bg-primary-soft selection:text-primary-700">
@@ -32,7 +38,7 @@ const Layout: React.FC<LayoutProps> = ({ currentView, setView, children }) => {
           {/* Logo */}
           <div
             className="flex items-center space-x-2.5 cursor-pointer group"
-            onClick={() => setView(ViewState.HOME)}
+            onClick={() => handleNavigate('/')}
           >
             <motion.div
               whileHover={{ scale: 1.1, rotate: 10 }}
@@ -47,11 +53,11 @@ const Layout: React.FC<LayoutProps> = ({ currentView, setView, children }) => {
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center space-x-1">
             {navItems.map((item) => {
-              const isActive = currentView === item.id;
+              const isActive = currentPath === item.path || (item.path !== '/' && currentPath.startsWith(item.path));
               return (
                 <button
-                  key={item.id}
-                  onClick={() => setView(item.id)}
+                  key={item.path}
+                  onClick={() => handleNavigate(item.path)}
                   className="relative px-4 py-2 rounded-button text-sm font-medium transition-colors flex items-center space-x-2 group"
                 >
                   {isActive && (
@@ -71,9 +77,9 @@ const Layout: React.FC<LayoutProps> = ({ currentView, setView, children }) => {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => setView(ViewState.CONTRIBUTE)}
+              onClick={() => handleNavigate('/contribute')}
               className={`ml-4 px-4 py-2 text-sm font-medium rounded-button transition-colors shadow-soft flex items-center space-x-2
-                ${currentView === ViewState.CONTRIBUTE
+                ${currentPath === '/contribute'
                   ? 'bg-text-primary text-white ring-2 ring-offset-2 ring-text-primary'
                   : 'bg-text-primary text-white hover:bg-black'}`}
             >
@@ -102,13 +108,10 @@ const Layout: React.FC<LayoutProps> = ({ currentView, setView, children }) => {
               <div className="p-4 space-y-2">
                 {navItems.map((item) => (
                   <button
-                    key={item.id}
-                    onClick={() => {
-                      setView(item.id);
-                      setIsMenuOpen(false);
-                    }}
+                    key={item.path}
+                    onClick={() => handleNavigate(item.path)}
                     className={`w-full text-left px-4 py-3 rounded-button flex items-center space-x-3 transition-colors
-                      ${currentView === item.id
+                      ${currentPath === item.path
                         ? 'bg-primary-soft text-primary-700 font-medium'
                         : 'text-text-secondary hover:bg-background-subtle'}`}
                   >
@@ -118,10 +121,7 @@ const Layout: React.FC<LayoutProps> = ({ currentView, setView, children }) => {
                 ))}
                 <div className="border-t border-border my-2 pt-2">
                   <button
-                    onClick={() => {
-                      setView(ViewState.CONTRIBUTE);
-                      setIsMenuOpen(false);
-                    }}
+                    onClick={() => handleNavigate('/contribute')}
                     className="w-full text-left px-4 py-3 rounded-button bg-text-primary text-white font-medium"
                   >
                     Katkı Yap
@@ -136,7 +136,7 @@ const Layout: React.FC<LayoutProps> = ({ currentView, setView, children }) => {
       {/* Main Content with Page Transitions */}
       <AnimatePresence mode="wait">
         <motion.main
-          key={currentView}
+          key={currentPath}
           initial={{ opacity: 0, y: 15, filter: 'blur(5px)' }}
           animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
           exit={{ opacity: 0, y: -15, filter: 'blur(5px)' }}
@@ -170,17 +170,17 @@ const Layout: React.FC<LayoutProps> = ({ currentView, setView, children }) => {
               <h5 className="font-semibold text-text-primary mb-3 text-sm">Hızlı Erişim</h5>
               <ul className="space-y-2">
                 <li>
-                  <button onClick={() => setView(ViewState.GUIDE)} className="text-sm text-text-muted hover:text-primary transition-colors">
+                  <button onClick={() => handleNavigate('/guide')} className="text-sm text-text-muted hover:text-primary transition-colors">
                     Atık Rehberi
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => setView(ViewState.LAB)} className="text-sm text-text-muted hover:text-primary transition-colors">
+                  <button onClick={() => handleNavigate('/lab')} className="text-sm text-text-muted hover:text-primary transition-colors">
                     Kompost Lab
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => setView(ViewState.MAP)} className="text-sm text-text-muted hover:text-primary transition-colors">
+                  <button onClick={() => handleNavigate('/map')} className="text-sm text-text-muted hover:text-primary transition-colors">
                     İstasyon Haritası
                   </button>
                 </li>
@@ -192,17 +192,17 @@ const Layout: React.FC<LayoutProps> = ({ currentView, setView, children }) => {
               <h5 className="font-semibold text-text-primary mb-3 text-sm">Keşfet</h5>
               <ul className="space-y-2">
                 <li>
-                  <button onClick={() => setView(ViewState.BLOG)} className="text-sm text-text-muted hover:text-primary transition-colors flex items-center">
+                  <button onClick={() => handleNavigate('/blog')} className="text-sm text-text-muted hover:text-primary transition-colors flex items-center">
                     <Newspaper size={14} className="mr-2" /> Blog & Haberler
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => setView(ViewState.FAQ)} className="text-sm text-text-muted hover:text-primary transition-colors flex items-center">
+                  <button onClick={() => handleNavigate('/faq')} className="text-sm text-text-muted hover:text-primary transition-colors flex items-center">
                     <HelpCircle size={14} className="mr-2" /> Sık Sorulan Sorular
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => setView(ViewState.SCHOOL_REGISTER)} className="text-sm text-text-muted hover:text-primary transition-colors flex items-center">
+                  <button onClick={() => handleNavigate('/school-register')} className="text-sm text-text-muted hover:text-primary transition-colors flex items-center">
                     <School size={14} className="mr-2" /> Okul Kaydı
                   </button>
                 </li>
@@ -214,12 +214,12 @@ const Layout: React.FC<LayoutProps> = ({ currentView, setView, children }) => {
               <h5 className="font-semibold text-text-primary mb-3 text-sm">Katkıda Bulun</h5>
               <ul className="space-y-2">
                 <li>
-                  <button onClick={() => setView(ViewState.CONTRIBUTE)} className="text-sm text-text-muted hover:text-primary transition-colors">
+                  <button onClick={() => handleNavigate('/contribute')} className="text-sm text-text-muted hover:text-primary transition-colors">
                     Katkı Yap
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => setView(ViewState.GALLERY)} className="text-sm text-text-muted hover:text-primary transition-colors">
+                  <button onClick={() => handleNavigate('/gallery')} className="text-sm text-text-muted hover:text-primary transition-colors">
                     Proje Galerisi
                   </button>
                 </li>
@@ -231,7 +231,7 @@ const Layout: React.FC<LayoutProps> = ({ currentView, setView, children }) => {
           <div className="pt-6 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-xs text-text-muted/60 select-none">
               <span
-                onDoubleClick={() => setView(ViewState.ADMIN_LOGIN)}
+                onDoubleClick={() => handleNavigate('/admin/login')}
                 className="cursor-default hover:text-text-secondary transition-colors"
                 title=""
               >
@@ -240,7 +240,7 @@ const Layout: React.FC<LayoutProps> = ({ currentView, setView, children }) => {
             </div>
             <div className="flex items-center gap-4 text-xs text-text-muted">
               <button
-                onClick={() => setView(ViewState.PRIVACY_POLICY)}
+                onClick={() => handleNavigate('/privacy-policy')}
                 className="hover:text-primary transition-colors"
               >
                 Gizlilik Politikası
@@ -253,7 +253,7 @@ const Layout: React.FC<LayoutProps> = ({ currentView, setView, children }) => {
       </footer>
 
       {/* Mobile Bottom Navigation */}
-      <MobileNav currentView={currentView} setView={setView} />
+      <MobileNav />
     </div>
   );
 };

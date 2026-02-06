@@ -1,21 +1,107 @@
 {
     "name": "Toprağa Dönüş",
     "short_name": "Toprağa Dönüş",
-    "description": "Organik atık yönetimi ve kompostlama rehberi",
+    "description": "Organik atık yönetimi, kompostlama rehberi ve geri dönüşüm haritası",
     "start_url": "/",
+    "id": "/",
+    "scope": "/",
     "display": "standalone",
+    "orientation": "portrait-primary",
     "background_color": "#FBF7F0",
     "theme_color": "#2F6B3C",
+    "categories": [
+        "education",
+        "lifestyle",
+        "utilities"
+    ],
+    "lang": "tr",
+    "dir": "ltr",
     "icons": [
         {
-            "src": "/android-chrome-192x192.png",
+            "src": "/logo.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/logo.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "/logo.png",
             "sizes": "192x192",
             "type": "image/png"
         },
         {
-            "src": "/android-chrome-512x512.png",
-            "sizes": "512x512",
+            "src": "/logo.png",
+            "sizes": "144x144",
+            "type": "image/png"
+        },
+        {
+            "src": "/logo.png",
+            "sizes": "96x96",
+            "type": "image/png"
+        },
+        {
+            "src": "/logo.png",
+            "sizes": "72x72",
+            "type": "image/png"
+        },
+        {
+            "src": "/logo.png",
+            "sizes": "48x48",
             "type": "image/png"
         }
-    ]
+    ],
+    "shortcuts": [
+        {
+            "name": "Atık Rehberi",
+            "short_name": "Rehber",
+            "description": "Hangi atık nereye? Kompost rehberine göz at",
+            "url": "/guide",
+            "icons": [
+                {
+                    "src": "/logo.png",
+                    "sizes": "96x96"
+                }
+            ]
+        },
+        {
+            "name": "Geri Dönüşüm Haritası",
+            "short_name": "Harita",
+            "description": "Yakınındaki geri dönüşüm noktalarını bul",
+            "url": "/map",
+            "icons": [
+                {
+                    "src": "/logo.png",
+                    "sizes": "96x96"
+                }
+            ]
+        },
+        {
+            "name": "Kompost Lab",
+            "short_name": "Lab",
+            "description": "Kompost deneylerini incele",
+            "url": "/lab",
+            "icons": [
+                {
+                    "src": "/logo.png",
+                    "sizes": "96x96"
+                }
+            ]
+        }
+    ],
+    "screenshots": [
+        {
+            "src": "/logo.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "form_factor": "wide",
+            "label": "Toprağa Dönüş Ana Sayfa"
+        }
+    ],
+    "related_applications": [],
+    "prefer_related_applications": false
 }

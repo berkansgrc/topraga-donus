@@ -6,6 +6,7 @@ import {
     MapPin, Users, Building, Mail, Phone, User, ChevronRight,
     BookOpen, Leaf, Recycle, TreeDeciduous
 } from 'lucide-react';
+import { useToast } from '../context/ToastContext';
 
 // Katılmak istenilen aktiviteler
 const ACTIVITIES = [
@@ -54,6 +55,8 @@ const SchoolRegister: React.FC = () => {
         }));
     };
 
+    const { addToast } = useToast();
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -85,8 +88,11 @@ const SchoolRegister: React.FC = () => {
             }
 
             setIsSubmitted(true);
+            addToast('Başvurunuz başarıyla alındı!', 'success');
         } catch (err: any) {
-            setSubmitError('Başvuru gönderilirken bir hata oluştu. Lütfen tekrar deneyin.');
+            const msg = 'Başvuru gönderilirken bir hata oluştu. Lütfen tekrar deneyin.';
+            setSubmitError(msg);
+            addToast(msg, 'error');
             console.error(err);
         } finally {
             setIsSubmitting(false);

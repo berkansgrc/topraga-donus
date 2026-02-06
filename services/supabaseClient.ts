@@ -1,12 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 
-// NOT: Güvenlik için bu anahtarlar normalde .env dosyasında (process.env) tutulmalıdır.
-// Ancak demo ortamında çalışması için buraya varsayılan olarak eklenmiştir.
+// Supabase configuration from environment variables
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Kullanıcının sağladığı Proje URL'si
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://bucxozitsdrpwfuloscj.supabase.co';
-
-// Kullanıcının sağladığı API Anahtarı
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_wa4opGH8FH3jMlVf5KCC5Q_UJVQcpGg';
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    throw new Error('Missing Supabase environment variables. Please check your .env.local file.');
+}
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);

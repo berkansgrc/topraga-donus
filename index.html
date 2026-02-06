@@ -14,15 +14,15 @@
   <meta name="author" content="Toprağa Dönüş Projesi" />
   <meta name="google-site-verification" content="0uDnmOo8fvDRZgXic4aWDLNHOWwKEL2VYB4f0al7BqU" />
   <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://topragadonus.com/" />
+  <link rel="canonical" href="https://topragadonus.online/" />
 
   <!-- Open Graph (Facebook, LinkedIn) -->
   <meta property="og:title" content="Toprağa Dönüş | Organik Atık Yönetimi" />
   <meta property="og:description"
     content="Organik atıklarınızı kompostlayın, geri dönüşüm noktalarını bulun, çevreye katkı sağlayın." />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://topragadonus.com/" />
-  <meta property="og:image" content="https://topragadonus.com/og-image.png" />
+  <meta property="og:url" content="https://topragadonus.online/" />
+  <meta property="og:image" content="https://topragadonus.online/og-image.png" />
   <meta property="og:locale" content="tr_TR" />
   <meta property="og:site_name" content="Toprağa Dönüş" />
 
@@ -30,12 +30,13 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Toprağa Dönüş | Organik Atık Yönetimi" />
   <meta name="twitter:description" content="Organik atıklarınızı kompostlayın, geri dönüşüm noktalarını bulun." />
-  <meta name="twitter:image" content="https://topragadonus.com/og-image.png" />
+  <meta name="twitter:image" content="https://topragadonus.online/og-image.png" />
 
   <!-- Favicon ve Mobil İkonlar -->
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" href="/logo.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/logo.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/logo.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/logo.png" />
   <link rel="manifest" href="/site.webmanifest" />
   <meta name="theme-color" content="#2F6B3C" />
   <script src="https://cdn.tailwindcss.com"></script>
@@ -157,12 +158,12 @@
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "Toprağa Dönüş",
-    "url": "https://topragadonus.com/",
+    "url": "https://topragadonus.online/",
     "description": "Organik atık yönetimi, kompostlama ve çevresel sürdürülebilirlik projesi",
     "inLanguage": "tr",
     "potentialAction": {
       "@type": "SearchAction",
-      "target": "https://topragadonus.com/?q={search_term_string}",
+      "target": "https://topragadonus.online/?q={search_term_string}",
       "query-input": "required name=search_term_string"
     }
   }
@@ -173,8 +174,8 @@
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": "Toprağa Dönüş Projesi",
-    "url": "https://topragadonus.com/",
-    "logo": "https://topragadonus.com/logo.png",
+    "url": "https://topragadonus.online/",
+    "logo": "https://topragadonus.online/logo.png",
     "description": "Harezmi Eğitim Modeli kapsamında organik atık yönetimi ve çevresel farkındalık projesi",
     "sameAs": [
       "https://www.instagram.com/topragadonus/",
@@ -183,7 +184,7 @@
     "contactPoint": {
       "@type": "ContactPoint",
       "contactType": "customer service",
-      "email": "iletisim@topragadonus.com"
+      "email": "iletisim@topragadonus.online"
     }
   }
   </script>
@@ -213,6 +214,21 @@
     function gtag() { dataLayer.push(arguments); }
     gtag('js', new Date());
     gtag('config', 'G-XXXXXXXXXX');
+  </script>
+
+  <!-- Service Worker Kaydı (PWA) -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/sw.js')
+          .then(function (registration) {
+            console.log('✅ Service Worker kaydedildi:', registration.scope);
+          })
+          .catch(function (error) {
+            console.log('❌ Service Worker kaydı başarısız:', error);
+          });
+      });
+    }
   </script>
 </body>
 

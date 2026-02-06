@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 
-const API_KEY = process.env.API_KEY || '';
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
 
 export interface GroundingChunk {
   web?: { uri: string; title: string };
@@ -22,7 +22,7 @@ const getAIClient = () => {
 export const askGeminiWasteAdvisor = async (query: string): Promise<string> => {
   try {
     const ai = getAIClient();
-    
+
     const systemPrompt = `
       Sen 'Toprağa Dönüş' projesi için bir atık uzmanısın.
       Hedef kitle: Ortaokul öğrencileri.
@@ -60,7 +60,7 @@ export const findRecyclingStations = async (
       }
     } : undefined;
 
-    const prompt = userLocation 
+    const prompt = userLocation
       ? `Find ${type} recycling stations or collection points near my location. List them.`
       : `Find ${type} recycling stations or collection points in Istanbul. List them.`;
 
