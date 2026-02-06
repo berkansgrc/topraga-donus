@@ -192,11 +192,11 @@ Tarayıcı ayarlarınızdan çerezleri devre dışı bırakabilirsiniz.`
                         <motion.a
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            href="mailto:berkansigirci@gmail.com"
+                            href="mailto:berkan_1225@hotmail.com"
                             className="inline-flex items-center gap-2 bg-primary hover:bg-primary-600 text-white px-6 py-3 rounded-button font-medium transition-colors"
                         >
                             <Mail size={18} />
-                            berkansigirci@gmail.com
+                            berkan_1225@hotmail.com
                         </motion.a>
                     )}
                 </motion.div>

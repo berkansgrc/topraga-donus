@@ -47,7 +47,7 @@ const GAMES: Game[] = [
         description: 'Kartları eşleştirerek çevre bilgini pekiştir!',
         emoji: '🃏',
         color: 'text-primary-600',
-        bgGradient: 'from-primary-600 to-emerald-600',
+        bgGradient: 'from-primary to-primary-600',
         difficulty: 'easy',
         isLocked: false
     },
@@ -57,7 +57,7 @@ const GAMES: Game[] = [
         description: 'Zamana karşı yarış! Atıkları hızlıca sınıflandır.',
         emoji: '⚡',
         color: 'text-secondary-600',
-        bgGradient: 'from-secondary-600 to-amber-600',
+        bgGradient: 'from-secondary to-secondary-600',
         difficulty: 'hard',
         isLocked: true,
         comingSoon: true
@@ -78,8 +78,8 @@ const GAMES: Game[] = [
         title: 'Karbon Avcısı',
         description: 'CO₂ emisyonlarını azaltarak puan topla!',
         emoji: '🌍',
-        color: 'text-emerald-600',
-        bgGradient: 'from-emerald-500 to-primary',
+        color: 'text-primary',
+        bgGradient: 'from-primary to-primary-600',
         difficulty: 'medium',
         isLocked: true,
         comingSoon: true

@@ -15,6 +15,7 @@ import SchoolRegister from './components/SchoolRegister';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import NotFound from './components/NotFound';
 import Games from './components/Games';
+import AboutUs from './components/AboutUs';
 
 export const AppRoutes = () => {
     return (
@@ -31,6 +32,7 @@ export const AppRoutes = () => {
             <Route path="/faq" element={<FAQ />} />
             <Route path="/school-register" element={<SchoolRegister />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/about-us" element={<AboutUs />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="*" element={<NotFound />} />

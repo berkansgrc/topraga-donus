@@ -176,7 +176,7 @@ const MemoryGame: React.FC<MemoryGameProps> = ({ onBack }) => {
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="bg-white rounded-card border border-border shadow-card p-8 max-w-md w-full text-center"
+                    className="bg-background-surface rounded-card border border-border shadow-card p-8 max-w-md w-full text-center"
                 >
                     <div className="text-7xl mb-4">🃏</div>
                     <h1 className="text-3xl font-bold text-text-primary mb-2">Çevre Hafıza Oyunu</h1>
@@ -210,7 +210,7 @@ const MemoryGame: React.FC<MemoryGameProps> = ({ onBack }) => {
 
                     <button
                         onClick={initializeGame}
-                        className="w-full py-4 bg-gradient-to-r from-primary-600 to-emerald-600 text-white font-bold text-lg rounded-button shadow-soft hover:shadow-card transition-all flex items-center justify-center gap-2"
+                        className="w-full py-4 bg-gradient-to-r from-primary to-primary-600 text-white font-bold text-lg rounded-button shadow-soft hover:shadow-card transition-all flex items-center justify-center gap-2"
                     >
                         <Zap size={20} />
                         Oyuna Başla
@@ -236,7 +236,7 @@ const MemoryGame: React.FC<MemoryGameProps> = ({ onBack }) => {
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="bg-white rounded-card border border-border shadow-card p-8 max-w-md w-full text-center"
+                    className="bg-background-surface rounded-card border border-border shadow-card p-8 max-w-md w-full text-center"
                 >
                     <div className="text-7xl mb-4">{performance.emoji}</div>
                     <h1 className="text-3xl font-bold text-primary mb-2">{performance.title}</h1>
@@ -254,19 +254,19 @@ const MemoryGame: React.FC<MemoryGameProps> = ({ onBack }) => {
                     </div>
 
                     {(score >= highScore || moves <= bestMoves) && (
-                        <div className="bg-gradient-to-r from-yellow-100 to-amber-100 rounded-lg p-3 mb-6 flex items-center justify-center gap-2 border border-yellow-200">
-                            <Star className="text-yellow-500 fill-yellow-500" size={20} />
-                            <span className="font-bold text-yellow-700">
+                        <div className="bg-secondary-soft rounded-lg p-3 mb-6 flex items-center justify-center gap-2 border border-secondary">
+                            <Star className="text-secondary fill-secondary" size={20} />
+                            <span className="font-bold text-secondary-700">
                                 {score >= highScore ? '🏆 Yeni Puan Rekoru!' : '⚡ En Az Hamle!'}
                             </span>
-                            <Star className="text-yellow-500 fill-yellow-500" size={20} />
+                            <Star className="text-secondary fill-secondary" size={20} />
                         </div>
                     )}
 
                     <div className="flex gap-3">
                         <button
                             onClick={initializeGame}
-                            className="flex-1 py-3 bg-gradient-to-r from-primary-600 to-emerald-600 text-white font-bold rounded-button flex items-center justify-center gap-2"
+                            className="flex-1 py-3 bg-gradient-to-r from-primary to-primary-600 text-white font-bold rounded-button flex items-center justify-center gap-2"
                         >
                             <RotateCcw size={18} />
                             Tekrar Oyna
@@ -288,7 +288,7 @@ const MemoryGame: React.FC<MemoryGameProps> = ({ onBack }) => {
     return (
         <div className="min-h-[70vh] p-4 max-w-lg mx-auto">
             {/* Header */}
-            <div className="bg-white rounded-card border border-border shadow-card p-4 mb-6">
+            <div className="bg-background-surface rounded-card border border-border shadow-card p-4 mb-6">
                 <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-1">
@@ -309,9 +309,9 @@ const MemoryGame: React.FC<MemoryGameProps> = ({ onBack }) => {
                     </button>
                 </div>
                 {/* Progress Bar */}
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-2 bg-background-subtle rounded-full overflow-hidden">
                     <motion.div
-                        className="h-full bg-gradient-to-r from-primary-600 to-emerald-600"
+                        className="h-full bg-gradient-to-r from-primary to-primary-600"
                         initial={{ width: 0 }}
                         animate={{ width: `${(matches / CARD_PAIRS.length) * 100}%` }}
                         transition={{ duration: 0.3 }}
@@ -320,46 +320,84 @@ const MemoryGame: React.FC<MemoryGameProps> = ({ onBack }) => {
             </div>
 
             {/* Card Grid */}
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-4 gap-3 md:gap-4">
                 {cards.map(card => (
                     <motion.div
                         key={card.id}
                         onClick={() => handleCardClick(card.id)}
                         className={`
-                            aspect-square rounded-xl cursor-pointer relative
-                            ${card.isMatched ? 'opacity-50' : ''}
+                            aspect-square rounded-2xl cursor-pointer relative perspective-1000
+                            ${card.isMatched ? 'pointer-events-none' : ''}
                         `}
-                        whileHover={!card.isFlipped && !card.isMatched ? { scale: 1.05 } : {}}
+                        whileHover={!card.isFlipped && !card.isMatched ? { scale: 1.08, y: -4 } : {}}
                         whileTap={!card.isFlipped && !card.isMatched ? { scale: 0.95 } : {}}
                     >
                         <AnimatePresence mode="wait">
                             {card.isFlipped || card.isMatched ? (
                                 <motion.div
                                     key="front"
-                                    initial={{ rotateY: 90 }}
-                                    animate={{ rotateY: 0 }}
-                                    exit={{ rotateY: 90 }}
-                                    transition={{ duration: 0.2 }}
+                                    initial={{ rotateY: 90, scale: 0.8 }}
+                                    animate={{ rotateY: 0, scale: 1 }}
+                                    exit={{ rotateY: 90, scale: 0.8 }}
+                                    transition={{ duration: 0.3, type: "spring", stiffness: 200 }}
                                     className={`
-                                        absolute inset-0 rounded-xl flex items-center justify-center text-4xl
+                                        absolute inset-0 rounded-2xl flex flex-col items-center justify-center
                                         ${card.isMatched
-                                            ? 'bg-primary-soft border-2 border-primary'
-                                            : 'bg-white border-2 border-primary shadow-card'
+                                            ? 'bg-gradient-to-br from-primary-soft via-green-50 to-primary-soft border-2 border-primary shadow-lg'
+                                            : 'bg-white border-2 border-primary shadow-lg'
                                         }
                                     `}
                                 >
-                                    {card.emoji}
+                                    <motion.span
+                                        className="text-4xl md:text-5xl"
+                                        initial={{ scale: 0 }}
+                                        animate={{ scale: 1 }}
+                                        transition={{ delay: 0.1, type: "spring", stiffness: 300 }}
+                                    >
+                                        {card.emoji}
+                                    </motion.span>
+                                    {card.isMatched && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 5 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="absolute bottom-1 left-0 right-0"
+                                        >
+                                            <span className="text-[8px] md:text-[10px] font-medium text-primary-700 bg-primary-soft/80 px-1.5 py-0.5 rounded-full">
+                                                {card.name}
+                                            </span>
+                                        </motion.div>
+                                    )}
                                 </motion.div>
                             ) : (
                                 <motion.div
                                     key="back"
-                                    initial={{ rotateY: -90 }}
-                                    animate={{ rotateY: 0 }}
-                                    exit={{ rotateY: -90 }}
-                                    transition={{ duration: 0.2 }}
-                                    className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary-600 to-emerald-600 flex items-center justify-center text-white text-2xl shadow-card"
+                                    initial={{ rotateY: -90, scale: 0.8 }}
+                                    animate={{ rotateY: 0, scale: 1 }}
+                                    exit={{ rotateY: -90, scale: 0.8 }}
+                                    transition={{ duration: 0.3, type: "spring", stiffness: 200 }}
+                                    className="absolute inset-0 rounded-2xl overflow-hidden shadow-lg"
                                 >
-                                    ❓
+                                    {/* Gradient Background */}
+                                    <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary-600 to-secondary" />
+
+                                    {/* Compost Pattern Overlay */}
+                                    <div className="absolute inset-0 opacity-25">
+                                        <div className="absolute top-1 left-1 text-sm md:text-base rotate-[-15deg]">🍎</div>
+                                        <div className="absolute top-1 right-1 text-sm md:text-base rotate-[20deg]">🥕</div>
+                                        <div className="absolute bottom-1 left-1 text-sm md:text-base rotate-[10deg]">🍌</div>
+                                        <div className="absolute bottom-1 right-1 text-sm md:text-base rotate-[-25deg]">🥬</div>
+                                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-base md:text-lg">🌱</div>
+                                    </div>
+
+                                    {/* Glass Effect Center */}
+                                    <div className="absolute inset-2 md:inset-3 rounded-xl bg-white/10 backdrop-blur-[2px] flex items-center justify-center border border-white/20">
+                                        <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-white/20 flex items-center justify-center">
+                                            <span className="text-white text-lg md:text-xl font-bold">?</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Shine Effect */}
+                                    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent" />
                                 </motion.div>
                             )}
                         </AnimatePresence>

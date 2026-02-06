@@ -198,7 +198,7 @@ const CompostQuiz: React.FC<CompostQuizProps> = ({ onBack }) => {
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="bg-white rounded-card border border-border shadow-card p-8 max-w-md w-full text-center"
+                    className="bg-background-surface rounded-card border border-border shadow-card p-8 max-w-md w-full text-center"
                 >
                     <div className="text-7xl mb-4">🧠</div>
                     <h1 className="text-3xl font-bold text-text-primary mb-2">Kompost Bilgi Yarışması</h1>
@@ -252,7 +252,7 @@ const CompostQuiz: React.FC<CompostQuizProps> = ({ onBack }) => {
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="bg-white rounded-card border border-border shadow-card p-8 max-w-md w-full text-center"
+                    className="bg-background-surface rounded-card border border-border shadow-card p-8 max-w-md w-full text-center"
                 >
                     <div className="text-7xl mb-4">{performance.emoji}</div>
                     <h1 className="text-3xl font-bold text-secondary mb-2">{performance.title}</h1>
@@ -270,10 +270,10 @@ const CompostQuiz: React.FC<CompostQuizProps> = ({ onBack }) => {
                     </div>
 
                     {score >= highScore && score > 0 && (
-                        <div className="bg-gradient-to-r from-yellow-100 to-amber-100 rounded-lg p-3 mb-6 flex items-center justify-center gap-2 border border-yellow-200">
-                            <Star className="text-yellow-500 fill-yellow-500" size={20} />
-                            <span className="font-bold text-yellow-700">🏆 Yeni Rekor!</span>
-                            <Star className="text-yellow-500 fill-yellow-500" size={20} />
+                        <div className="bg-secondary-soft rounded-lg p-3 mb-6 flex items-center justify-center gap-2 border border-secondary">
+                            <Star className="text-secondary fill-secondary" size={20} />
+                            <span className="font-bold text-secondary-700">🏆 Yeni Rekor!</span>
+                            <Star className="text-secondary fill-secondary" size={20} />
                         </div>
                     )}
 
@@ -302,7 +302,7 @@ const CompostQuiz: React.FC<CompostQuizProps> = ({ onBack }) => {
     return (
         <div className="min-h-[70vh] p-4 max-w-2xl mx-auto">
             {/* Header */}
-            <div className="bg-white rounded-card border border-border shadow-card p-4 mb-6">
+            <div className="bg-background-surface rounded-card border border-border shadow-card p-4 mb-6">
                 <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
                         <Brain className="text-secondary" size={20} />
@@ -319,7 +319,7 @@ const CompostQuiz: React.FC<CompostQuizProps> = ({ onBack }) => {
                     </button>
                 </div>
                 {/* Progress Bar */}
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-2 bg-background-subtle rounded-full overflow-hidden">
                     <motion.div
                         className="h-full bg-gradient-to-r from-secondary to-secondary-600"
                         initial={{ width: 0 }}
@@ -337,7 +337,7 @@ const CompostQuiz: React.FC<CompostQuizProps> = ({ onBack }) => {
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: -20 }}
-                        className="bg-white rounded-card border border-border shadow-card p-6 mb-6"
+                        className="bg-background-surface rounded-card border border-border shadow-card p-6 mb-6"
                     >
                         <h2 className="text-xl font-bold text-text-primary mb-6">
                             {currentQuestion.question}
@@ -360,11 +360,11 @@ const CompostQuiz: React.FC<CompostQuizProps> = ({ onBack }) => {
                                         textClass = 'text-primary-700';
                                     } else if (isSelected && !isCorrect) {
                                         bgClass = 'bg-red-50';
-                                        borderClass = 'border-red-400';
-                                        textClass = 'text-red-700';
+                                        borderClass = 'border-status-error';
+                                        textClass = 'text-status-error';
                                     } else {
-                                        bgClass = 'bg-gray-50';
-                                        textClass = 'text-gray-400';
+                                        bgClass = 'bg-background-subtle';
+                                        textClass = 'text-text-muted';
                                     }
                                 }
 
@@ -376,7 +376,7 @@ const CompostQuiz: React.FC<CompostQuizProps> = ({ onBack }) => {
                                         className={`w-full p-4 rounded-lg border-2 ${borderClass} ${bgClass} ${textClass} text-left transition-all flex items-center justify-between ${selectedAnswer === null ? 'cursor-pointer' : 'cursor-default'}`}
                                     >
                                         <div className="flex items-center gap-3">
-                                            <span className="w-8 h-8 rounded-full bg-white border flex items-center justify-center text-sm font-bold">
+                                            <span className="w-8 h-8 rounded-full bg-background-surface border border-border flex items-center justify-center text-sm font-bold">
                                                 {String.fromCharCode(65 + index)}
                                             </span>
                                             <span className="font-medium">{option}</span>
@@ -385,7 +385,7 @@ const CompostQuiz: React.FC<CompostQuizProps> = ({ onBack }) => {
                                             <CheckCircle className="text-primary" size={24} />
                                         )}
                                         {showResult && isSelected && !isCorrect && (
-                                            <XCircle className="text-red-500" size={24} />
+                                            <XCircle className="text-status-error" size={24} />
                                         )}
                                     </button>
                                 );
@@ -403,16 +403,16 @@ const CompostQuiz: React.FC<CompostQuizProps> = ({ onBack }) => {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0 }}
                         className={`rounded-lg p-4 mb-6 flex items-start gap-3 ${selectedAnswer === currentQuestion.correctIndex
-                                ? 'bg-primary-soft border border-primary'
-                                : 'bg-blue-50 border border-blue-200'
+                            ? 'bg-primary-soft border border-primary'
+                            : 'bg-secondary-soft border border-secondary'
                             }`}
                     >
-                        <Lightbulb className={selectedAnswer === currentQuestion.correctIndex ? 'text-primary' : 'text-blue-500'} size={24} />
+                        <Lightbulb className={selectedAnswer === currentQuestion.correctIndex ? 'text-primary' : 'text-secondary'} size={24} />
                         <div>
-                            <p className={`font-bold mb-1 ${selectedAnswer === currentQuestion.correctIndex ? 'text-primary-700' : 'text-blue-700'}`}>
+                            <p className={`font-bold mb-1 ${selectedAnswer === currentQuestion.correctIndex ? 'text-primary-700' : 'text-secondary-700'}`}>
                                 {selectedAnswer === currentQuestion.correctIndex ? '✅ Doğru!' : '💡 Bilgi:'}
                             </p>
-                            <p className={selectedAnswer === currentQuestion.correctIndex ? 'text-primary-600' : 'text-blue-600'}>
+                            <p className={selectedAnswer === currentQuestion.correctIndex ? 'text-primary-600' : 'text-secondary-600'}>
                                 {currentQuestion.explanation}
                             </p>
                         </div>

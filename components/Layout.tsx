@@ -246,6 +246,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 Gizlilik Politikası
               </button>
               <span className="text-border">|</span>
+              <button
+                onClick={() => handleNavigate('/about-us')}
+                className="hover:text-primary transition-colors"
+              >
+                Hakkımızda
+              </button>
+              <span className="text-border">|</span>
               <span>Türkiye genelinde sürdürülebilir eğitim</span>
             </div>
           </div>

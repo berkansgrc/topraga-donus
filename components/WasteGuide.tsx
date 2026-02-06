@@ -8,7 +8,9 @@ import {
 import { WasteItem } from '../types';
 import CompostAnimation from './CompostAnimation';
 import CarbonCalculator from './CarbonCalculator';
+import CompostHealthCheck from './CompostHealthCheck';
 import { motion, AnimatePresence } from 'framer-motion';
+
 
 const getIcon = (iconName: string) => {
   switch (iconName) {
@@ -246,9 +248,10 @@ const WasteGuide: React.FC = () => {
         <CompostAnimation />
       </div>
 
-      {/* Carbon Calculator */}
-      <div className="mb-16">
-        <CarbonCalculator />
+      {/* Carbon Calculator & Health Check - Side by Side */}
+      <div className="mb-16 grid md:grid-cols-2 gap-6">
+        <CarbonCalculator compact />
+        <CompostHealthCheck />
       </div>
 
       {/* Educational Cards */}

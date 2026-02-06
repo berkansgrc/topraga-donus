@@ -100,7 +100,11 @@ type WasteEntry = {
     amount: number;
 };
 
-const CarbonCalculator: React.FC = () => {
+interface CarbonCalculatorProps {
+    compact?: boolean;
+}
+
+const CarbonCalculator: React.FC<CarbonCalculatorProps> = ({ compact = false }) => {
     const [wasteEntries, setWasteEntries] = useState<WasteEntry[]>([
         { type: 'vegetable', amount: 1 }
     ]);
@@ -190,21 +194,23 @@ const CarbonCalculator: React.FC = () => {
     };
 
     return (
-        <div className="rounded-card p-6 md:p-8 bg-white border border-border shadow-card">
+        <div className={`rounded-card bg-white border border-border shadow-card h-full flex flex-col ${compact ? 'p-5' : 'p-6 md:p-8'}`}>
 
             {/* Header */}
-            <div className="flex items-center justify-between mb-6">
+            <div className={`flex items-center justify-between ${compact ? 'mb-4' : 'mb-6'}`}>
                 <div className="flex items-center space-x-3">
-                    <div className="p-3 rounded-xl bg-gradient-to-br from-primary to-green-500 text-white shadow-soft">
-                        <Calculator size={24} />
+                    <div className={`rounded-xl bg-gradient-to-br from-primary to-green-500 text-white shadow-soft ${compact ? 'p-2' : 'p-3'}`}>
+                        <Calculator size={compact ? 18 : 24} />
                     </div>
                     <div>
-                        <h3 className="text-xl font-bold text-text-primary">
-                            Karbon Ayak İzi Hesaplayıcı
+                        <h3 className={`font-bold text-text-primary ${compact ? 'text-base' : 'text-xl'}`}>
+                            Karbon Ayak İzi
                         </h3>
-                        <p className="text-sm text-text-muted">
-                            Kompostladığın atıkların çevresel etkisini keşfet
-                        </p>
+                        {!compact && (
+                            <p className="text-sm text-text-muted">
+                                Kompostladığın atıkların çevresel etkisini keşfet
+                            </p>
+                        )}
                     </div>
                 </div>
                 <button
@@ -212,7 +218,7 @@ const CarbonCalculator: React.FC = () => {
                     className="p-2 rounded-full hover:bg-background-subtle text-text-muted hover:text-text-primary transition-colors"
                     title="Sıfırla"
                 >
-                    <RotateCcw size={18} />
+                    <RotateCcw size={16} />
                 </button>
             </div>
 
@@ -231,8 +237,8 @@ const CarbonCalculator: React.FC = () => {
                             key={key}
                             onClick={() => { setTimeFrame(key as any); setHasCalculated(false); }}
                             className={`flex-1 py-2.5 text-sm font-medium transition-all ${timeFrame === key
-                                    ? 'bg-primary text-white'
-                                    : 'bg-white text-text-secondary hover:bg-background-subtle'
+                                ? 'bg-primary text-white'
+                                : 'bg-white text-text-secondary hover:bg-background-subtle'
                                 }`}
                         >
                             {label}

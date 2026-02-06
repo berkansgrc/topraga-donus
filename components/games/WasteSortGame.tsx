@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, Trophy, RotateCcw, ArrowLeft, Star, Zap, CheckCircle, XCircle } from 'lucide-react';
+import { Heart, Trophy, RotateCcw, ArrowLeft, Star, Zap, CheckCircle, XCircle, Hand } from 'lucide-react';
 
 // Kutu tipleri
 type BinType = 'compost' | 'recycle' | 'paper' | 'trash';
@@ -22,12 +22,12 @@ interface Bin {
     borderColor: string;
 }
 
-// Kutular
+// Kutular - Site tema renkleri
 const BINS: Bin[] = [
     { id: 'compost', name: 'Kompost', emoji: '🌱', color: 'text-primary', bgColor: 'bg-primary-soft', borderColor: 'border-primary' },
-    { id: 'recycle', name: 'Geri Dönüşüm', emoji: '♻️', color: 'text-blue-600', bgColor: 'bg-blue-50', borderColor: 'border-blue-400' },
+    { id: 'recycle', name: 'Geri Dönüşüm', emoji: '♻️', color: 'text-accent', bgColor: 'bg-accent-soft', borderColor: 'border-accent' },
     { id: 'paper', name: 'Kağıt', emoji: '📦', color: 'text-secondary', bgColor: 'bg-secondary-soft', borderColor: 'border-secondary' },
-    { id: 'trash', name: 'Çöp', emoji: '🚫', color: 'text-gray-600', bgColor: 'bg-gray-100', borderColor: 'border-gray-400' }
+    { id: 'trash', name: 'Çöp', emoji: '🚫', color: 'text-text-muted', bgColor: 'bg-background-subtle', borderColor: 'border-border' }
 ];
 
 // 20 Atık - her biri 1 kez gözükecek
@@ -75,10 +75,14 @@ const WasteSortGame: React.FC<WasteSortGameProps> = ({ onBack }) => {
     const [draggedOver, setDraggedOver] = useState<BinType | null>(null);
     const [streak, setStreak] = useState(0);
     const [correctCount, setCorrectCount] = useState(0);
+    const [selectedItem, setSelectedItem] = useState<boolean>(false); // Mobil için seçim durumu
     const [highScore, setHighScore] = useState(() => {
         const saved = localStorage.getItem('wasteSortHighScore');
         return saved ? parseInt(saved) : 0;
     });
+
+    // Mobil cihaz kontrolü
+    const isMobile = typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
 
     // Yeni oyun başlat - 20 atık karıştır
     const startGame = useCallback(() => {
@@ -89,6 +93,7 @@ const WasteSortGame: React.FC<WasteSortGameProps> = ({ onBack }) => {
         setLives(3);
         setStreak(0);
         setCorrectCount(0);
+        setSelectedItem(false);
         setGameState('playing');
     }, []);
 
@@ -112,6 +117,8 @@ const WasteSortGame: React.FC<WasteSortGameProps> = ({ onBack }) => {
             setStreak(0);
             setFeedback({ type: 'wrong', message: `Yanlış! ${currentItem.tip}` });
         }
+
+        setSelectedItem(false);
 
         // Sonraki atık veya oyun sonu
         setTimeout(() => {
@@ -149,7 +156,7 @@ const WasteSortGame: React.FC<WasteSortGameProps> = ({ onBack }) => {
         setDraggedOver(null);
     };
 
-    // Drag handlers
+    // Drag handlers (masaüstü için)
     const handleDragStart = (e: React.DragEvent) => {
         e.dataTransfer.effectAllowed = 'move';
     };
@@ -163,28 +170,18 @@ const WasteSortGame: React.FC<WasteSortGameProps> = ({ onBack }) => {
         setDraggedOver(null);
     };
 
-    // Touch handlers for mobile
-    const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
-    const itemRef = useRef<HTMLDivElement>(null);
-
-    const handleTouchStart = (e: React.TouchEvent) => {
-        const touch = e.touches[0];
-        setTouchStart({ x: touch.clientX, y: touch.clientY });
+    // Mobil için: Atığa tıkla -> Seç
+    const handleItemClick = () => {
+        if (isMobile && gameState === 'playing') {
+            setSelectedItem(true);
+        }
     };
 
-    const handleTouchEnd = (e: React.TouchEvent) => {
-        if (!touchStart) return;
-
-        const touch = e.changedTouches[0];
-        const element = document.elementFromPoint(touch.clientX, touch.clientY);
-        const binElement = element?.closest('[data-bin]');
-
-        if (binElement) {
-            const binId = binElement.getAttribute('data-bin') as BinType;
+    // Mobil için: Kutuya tıkla -> Bırak
+    const handleBinClick = (binId: BinType) => {
+        if (isMobile && selectedItem) {
             handleDrop(binId);
         }
-
-        setTouchStart(null);
     };
 
     const currentItem = gameItems[currentItemIndex];
@@ -196,14 +193,23 @@ const WasteSortGame: React.FC<WasteSortGameProps> = ({ onBack }) => {
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="bg-white rounded-card border border-border shadow-card p-8 max-w-md w-full text-center"
+                    className="bg-background-surface rounded-card border border-border shadow-card p-8 max-w-md w-full text-center"
                 >
                     <div className="text-7xl mb-4">🗑️</div>
                     <h1 className="text-3xl font-bold text-text-primary mb-2">Atığı Doğru Kutuya At!</h1>
                     <p className="text-text-muted mb-6">
-                        20 atığı doğru kutulara sürükle ve bırak!<br />
+                        20 atığı doğru kutulara {isMobile ? 'taşı' : 'sürükle ve bırak'}!<br />
                         <span className="text-sm">3 canın var, dikkatli ol!</span>
                     </p>
+
+                    {isMobile && (
+                        <div className="bg-primary-soft rounded-lg p-3 mb-4 flex items-center justify-center gap-2">
+                            <Hand className="text-primary" size={18} />
+                            <span className="text-sm text-primary-700 font-medium">
+                                Atığa dokun → Kutuya dokun
+                            </span>
+                        </div>
+                    )}
 
                     {highScore > 0 && (
                         <div className="bg-secondary-soft rounded-lg p-3 mb-6 flex items-center justify-center gap-2">
@@ -248,7 +254,7 @@ const WasteSortGame: React.FC<WasteSortGameProps> = ({ onBack }) => {
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="bg-white rounded-card border border-border shadow-card p-8 max-w-md w-full text-center"
+                    className="bg-background-surface rounded-card border border-border shadow-card p-8 max-w-md w-full text-center"
                 >
                     <div className="text-7xl mb-4">🎉</div>
                     <h1 className="text-3xl font-bold text-primary mb-2">Tebrikler!</h1>
@@ -269,10 +275,10 @@ const WasteSortGame: React.FC<WasteSortGameProps> = ({ onBack }) => {
                     </div>
 
                     {score >= highScore && score > 0 && (
-                        <div className="bg-gradient-to-r from-yellow-100 to-amber-100 rounded-lg p-3 mb-6 flex items-center justify-center gap-2 border border-yellow-200">
-                            <Star className="text-yellow-500 fill-yellow-500" size={20} />
-                            <span className="font-bold text-yellow-700">🏆 Yeni Rekor!</span>
-                            <Star className="text-yellow-500 fill-yellow-500" size={20} />
+                        <div className="bg-secondary-soft rounded-lg p-3 mb-6 flex items-center justify-center gap-2 border border-secondary">
+                            <Star className="text-secondary fill-secondary" size={20} />
+                            <span className="font-bold text-secondary-700">🏆 Yeni Rekor!</span>
+                            <Star className="text-secondary fill-secondary" size={20} />
                         </div>
                     )}
 
@@ -304,7 +310,7 @@ const WasteSortGame: React.FC<WasteSortGameProps> = ({ onBack }) => {
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="bg-white rounded-card border border-border shadow-card p-8 max-w-md w-full text-center"
+                    className="bg-background-surface rounded-card border border-border shadow-card p-8 max-w-md w-full text-center"
                 >
                     <div className="text-7xl mb-4">💪</div>
                     <h1 className="text-3xl font-bold text-text-primary mb-2">Üzülme!</h1>
@@ -324,9 +330,9 @@ const WasteSortGame: React.FC<WasteSortGameProps> = ({ onBack }) => {
                         </div>
                     </div>
 
-                    <div className="bg-blue-50 rounded-lg p-4 mb-6 text-left">
-                        <p className="text-sm text-blue-700 font-medium mb-2">💡 İpucu:</p>
-                        <p className="text-sm text-blue-600">
+                    <div className="bg-primary-soft rounded-lg p-4 mb-6 text-left">
+                        <p className="text-sm text-primary-700 font-medium mb-2">💡 İpucu:</p>
+                        <p className="text-sm text-primary-600">
                             Organik atıklar (meyve kabukları, kahve) → Kompost 🌱<br />
                             Plastik, cam, metal → Geri Dönüşüm ♻️<br />
                             Kağıt, karton → Kağıt 📦<br />
@@ -359,7 +365,7 @@ const WasteSortGame: React.FC<WasteSortGameProps> = ({ onBack }) => {
     return (
         <div className="min-h-[70vh] p-4 max-w-2xl mx-auto">
             {/* Header */}
-            <div className="bg-white rounded-card border border-border shadow-card p-4 mb-6">
+            <div className="bg-background-surface rounded-card border border-border shadow-card p-4 mb-6">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-1">
@@ -371,7 +377,7 @@ const WasteSortGame: React.FC<WasteSortGameProps> = ({ onBack }) => {
                                 <Heart
                                     key={i}
                                     size={20}
-                                    className={i < lives ? 'fill-red-500 text-red-500' : 'text-gray-300'}
+                                    className={i < lives ? 'fill-status-error text-status-error' : 'text-border'}
                                 />
                             ))}
                         </div>
@@ -384,7 +390,7 @@ const WasteSortGame: React.FC<WasteSortGameProps> = ({ onBack }) => {
                     </button>
                 </div>
                 {/* Progress Bar */}
-                <div className="mt-3 h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div className="mt-3 h-2 bg-background-subtle rounded-full overflow-hidden">
                     <motion.div
                         className="h-full bg-gradient-to-r from-primary to-primary-600"
                         initial={{ width: 0 }}
@@ -393,11 +399,22 @@ const WasteSortGame: React.FC<WasteSortGameProps> = ({ onBack }) => {
                     />
                 </div>
                 {streak >= 3 && (
-                    <div className="mt-2 text-center text-sm font-bold text-orange-500">
+                    <div className="mt-2 text-center text-sm font-bold text-secondary">
                         🔥 {streak} Seri! +5 Bonus
                     </div>
                 )}
             </div>
+
+            {/* Mobil için talimat */}
+            {isMobile && selectedItem && (
+                <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-primary-soft text-primary-700 text-center py-2 px-4 rounded-lg mb-4 font-medium text-sm"
+                >
+                    👆 Şimdi bir kutuya dokun!
+                </motion.div>
+            )}
 
             {/* Current Item */}
             <div className="text-center mb-8">
@@ -406,18 +423,29 @@ const WasteSortGame: React.FC<WasteSortGameProps> = ({ onBack }) => {
                         <motion.div
                             key={currentItem.id + currentItemIndex}
                             initial={{ opacity: 0, y: -20, scale: 0.8 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            animate={{
+                                opacity: 1,
+                                y: 0,
+                                scale: selectedItem ? 1.1 : 1,
+                                boxShadow: selectedItem ? '0 0 0 4px rgba(47, 107, 60, 0.3)' : 'none'
+                            }}
                             exit={{ opacity: 0, y: 20, scale: 0.8 }}
-                            ref={itemRef}
-                            draggable
+                            draggable={!isMobile}
                             onDragStart={handleDragStart}
-                            onTouchStart={handleTouchStart}
-                            onTouchEnd={handleTouchEnd}
-                            className="inline-block bg-white rounded-card border-2 border-dashed border-primary p-6 cursor-grab active:cursor-grabbing shadow-card hover:shadow-hover transition-all select-none"
+                            onClick={handleItemClick}
+                            className={`
+                                inline-block bg-background-surface rounded-card border-2 border-dashed p-6 shadow-card hover:shadow-hover transition-all select-none
+                                ${isMobile ? 'cursor-pointer active:scale-105' : 'cursor-grab active:cursor-grabbing'}
+                                ${selectedItem ? 'border-primary border-solid ring-4 ring-primary-soft' : 'border-primary'}
+                            `}
                         >
                             <span className="text-6xl block mb-2">{currentItem.emoji}</span>
                             <span className="text-lg font-bold text-text-primary">{currentItem.name}</span>
-                            <p className="text-xs text-text-muted mt-1">Sürükle ve bırak!</p>
+                            <p className="text-xs text-text-muted mt-1">
+                                {isMobile
+                                    ? (selectedItem ? '👆 Kutuya dokun!' : '👆 Dokunarak seç!')
+                                    : 'Sürükle ve bırak!'}
+                            </p>
                         </motion.div>
                     )}
                 </AnimatePresence>
@@ -431,8 +459,8 @@ const WasteSortGame: React.FC<WasteSortGameProps> = ({ onBack }) => {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0 }}
                         className={`text-center mb-4 p-3 rounded-lg font-bold flex items-center justify-center gap-2 ${feedback.type === 'correct'
-                                ? 'bg-primary-soft text-primary-700'
-                                : 'bg-red-50 text-red-700'
+                            ? 'bg-primary-soft text-primary-700'
+                            : 'bg-red-50 text-status-error'
                             }`}
                     >
                         {feedback.type === 'correct' ? <CheckCircle size={20} /> : <XCircle size={20} />}
@@ -442,23 +470,26 @@ const WasteSortGame: React.FC<WasteSortGameProps> = ({ onBack }) => {
             </AnimatePresence>
 
             {/* Bins */}
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {BINS.map(bin => (
-                    <div
+                    <motion.div
                         key={bin.id}
                         data-bin={bin.id}
                         onDragOver={(e) => handleDragOver(e, bin.id)}
                         onDragLeave={handleDragLeave}
                         onDrop={() => handleDrop(bin.id)}
+                        onClick={() => handleBinClick(bin.id)}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                         className={`
-                            p-4 rounded-card border-2 transition-all text-center
+                            p-4 rounded-card border-2 transition-all text-center cursor-pointer
                             ${bin.bgColor} ${bin.borderColor}
-                            ${draggedOver === bin.id ? 'scale-105 shadow-lg border-4' : 'border-dashed'}
+                            ${draggedOver === bin.id || (selectedItem && isMobile) ? 'scale-105 shadow-lg border-4 ring-2 ring-primary-soft' : 'border-dashed'}
                         `}
                     >
                         <span className="text-4xl block mb-2">{bin.emoji}</span>
                         <span className={`text-sm font-bold ${bin.color}`}>{bin.name}</span>
-                    </div>
+                    </motion.div>
                 ))}
             </div>
         </div>
