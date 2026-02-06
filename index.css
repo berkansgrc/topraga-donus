@@ -1,3 +1,4 @@
 @import "tailwindcss";
+@config "./tailwind.config.js";
 
 /* Custom global styles if needed */
