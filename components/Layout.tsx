@@ -3,6 +3,7 @@ import { Sprout, Map, BookOpen, FlaskConical, Menu, X, Image as ImageIcon, Newsp
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import MobileNav from './MobileNav';
+import Chatbot from './Chatbot';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -18,7 +19,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const navItems = [
     { path: '/', label: 'Ana Sayfa', icon: Sprout },
     { path: '/guide', label: 'Atık Rehberi', icon: BookOpen },
-    { path: '/lab', label: 'Kompost Lab', icon: FlaskConical },
+    { path: '/school-register', label: 'Okul Kaydı', icon: School },
     { path: '/map', label: 'İstasyon Haritası', icon: Map },
     { path: '/gallery', label: 'Galeri', icon: ImageIcon },
     { path: '/blog', label: 'Haberler', icon: Newspaper },
@@ -261,6 +262,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
       {/* Mobile Bottom Navigation */}
       <MobileNav />
+
+      {/* AI Assistant Chatbot */}
+      {!currentPath.startsWith('/admin') && <Chatbot />}
     </div>
   );
 };
